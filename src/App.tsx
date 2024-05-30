@@ -1,51 +1,25 @@
-import { ThemeProvider } from '@emotion/react';
-import { CssBaseline } from '@mui/material';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { Outlet, RouterProvider, createBrowserRouter } from 'react-router-dom';
-
-import Layout from './components/Layout';
-import { queryClient } from './config/query';
-import { theme } from './config/theme';
-import AboutPage from './pages/about/AboutPage';
-import HomePage from './pages/home/HomePage';
-import NotFoundPage from './pages/notFound/NotFoundPage';
+import {
+  RouterProvider,
+  createBrowserRouter,
+  redirect,
+} from 'react-router-dom';
+import MainPage from './ui/MainPage';
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: (
-      <Layout>
-        <Outlet />
-      </Layout>
-    ),
+    element: <MainPage />,
     children: [
       {
-        path: '/',
-        element: <HomePage />,
-      },
-      {
-        path: '/about',
-        element: <AboutPage />,
-      },
-      {
         path: '*',
-        element: <NotFoundPage />,
+        loader: async () => redirect('/'),
       },
     ],
   },
 ]);
 
 function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <ReactQueryDevtools buttonPosition='bottom-left' />
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <RouterProvider router={router} />
-      </ThemeProvider>
-    </QueryClientProvider>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;
