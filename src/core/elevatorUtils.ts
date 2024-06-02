@@ -1,18 +1,18 @@
 import { Building } from './Building';
-import { ElevatorConfig } from './Elevator';
+import { Elevator, ElevatorConfig } from './Elevator';
 
 /**
- * Validates and returns a valid elevator configuration. For every non specified
+ * Returns a validated and sanitized elevator configuration. For every non specified
  * or invalid value, a default value is used. In case of invalid values, a warning
  * is logged to the console.
  */
-export function getValidConfig(
+export function sanitizeElevatorConfig(
   building: Building,
   config: ElevatorConfig,
 ): Required<ElevatorConfig> {
   const id = config.id;
 
-  let speed = 1;
+  let speed = 0.001;
   if (config.speed != undefined) {
     if (config.speed <= 0) {
       console.error(
@@ -42,4 +42,50 @@ export function getValidConfig(
     speed,
     baseFloor,
   };
+}
+
+/**
+ * Returns the direction in which the elevator must move to reach the target floor.
+ */
+export function determineElevatorMovingDirection(
+  elevator: Elevator,
+  targetFloor: number,
+): number {
+  const targetElevation =
+    elevator.building.getElevationAtFloorNumber(targetFloor);
+
+  if (elevator.elevation < targetElevation) {
+    return 1;
+  } else if (elevator.elevation === targetElevation) {
+    return 0;
+  } else {
+    return -1;
+  }
+}
+
+/**
+ * Returns the time it takes for the elevator to move to the target floor.
+ */
+export function calculateElevatorMovingDuration(
+  elevator: Elevator,
+  targetFloor: number,
+): number {
+  const speed = elevator.speed;
+  const distance = elevator.building.calculateDistanceToFloor(
+    elevator.elevation,
+    targetFloor,
+  );
+
+  const time = distance / speed;
+  return time;
+}
+
+/**
+ * Returns the distance the elevator moves in the given time.
+ */
+export function calculateElevatorMovingDistance(
+  elevator: Elevator,
+  time: number,
+) {
+  return time * elevator.speed;
 }

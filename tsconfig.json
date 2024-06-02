@@ -23,7 +23,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+    "noImplicitOverride": true
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]

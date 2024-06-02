@@ -35,13 +35,6 @@ export class Building {
     return this._maxFloor;
   }
 
-  private round(value: number): number {
-    const precision = 3;
-    const multer = 10 ** precision;
-
-    return Math.round(value * multer) / multer;
-  }
-
   /**
    * @returns The floor number at passed (exact) `elevation` or `undefined` if elevation is invalid.
    */
@@ -50,10 +43,15 @@ export class Building {
   }
 
   /**
-   * @returns The elevation at passed `floorNumber` or `undefined` if floor number is invalid.
+   * @returns The elevation at passed `floorNumber`.
    */
-  getElevationAtFloorNumber(floor: number): number | undefined {
-    return this.numberToElevation[floor];
+  getElevationAtFloorNumber(floor: number): number {
+    const elevation = this.numberToElevation[floor];
+    if (elevation === undefined) {
+      throw new Error('Invalid floor number.');
+    }
+
+    return elevation;
   }
 
   /**
@@ -67,8 +65,7 @@ export class Building {
       throw new Error('Invalid floor number.');
     }
 
-    let distance = Math.abs(elevation - this.numberToElevation[floor]);
-    return this.round(distance);
+    return Math.abs(elevation - this.numberToElevation[floor]);
   }
 
   /**
@@ -82,9 +79,8 @@ export class Building {
       throw new Error('Invalid endFloor number.');
     }
 
-    let distance = Math.abs(
+    return Math.abs(
       this.numberToElevation[endFloor] - this.numberToElevation[startFloor],
     );
-    return this.round(distance);
   }
 }

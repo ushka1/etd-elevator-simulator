@@ -1,5 +1,5 @@
 import { Building } from './Building';
-import { getValidConfig } from './elevatorUtils';
+import { sanitizeElevatorConfig } from './elevatorUtils';
 
 export type ElevatorConfig = {
   id: string;
@@ -8,13 +8,69 @@ export type ElevatorConfig = {
 };
 
 export class Elevator {
-  private building: Building;
-  private config: Required<ElevatorConfig>;
-  private elevation: number;
+  private _config: Required<ElevatorConfig>;
+  private _building: Building;
+  private _elevation: number;
+
+  private _direction = 0;
+  private _doorsOpened = false;
+  private _passengerCount = 0;
+
+  doorsOpeningDuration = 2000;
+  passengerBoardingDuration = 10000;
+  doorsClosingDuration = 2000;
 
   constructor(building: Building, config: ElevatorConfig) {
-    this.building = building;
-    this.config = getValidConfig(building, config);
-    this.elevation = building.getElevationAtFloorNumber(this.config.baseFloor)!;
+    this._config = sanitizeElevatorConfig(building, config);
+    this._building = building;
+    this._elevation = building.getElevationAtFloorNumber(this.baseFloor);
+  }
+
+  get id() {
+    return this._config.id;
+  }
+
+  get speed() {
+    return this._config.speed;
+  }
+
+  get baseFloor() {
+    return this._config.baseFloor;
+  }
+
+  get building() {
+    return this._building;
+  }
+
+  get elevation() {
+    return this._elevation;
+  }
+
+  set elevation(value: number) {
+    this._elevation = value;
+  }
+
+  get direction() {
+    return this._direction;
+  }
+
+  set direction(value: number) {
+    this._direction = value;
+  }
+
+  get doorsOpened() {
+    return this._doorsOpened;
+  }
+
+  set doorsOpened(value: boolean) {
+    this._doorsOpened = value;
+  }
+
+  get passengerCount() {
+    return this._passengerCount;
+  }
+
+  set passengerCount(value: number) {
+    this._passengerCount = value;
   }
 }
