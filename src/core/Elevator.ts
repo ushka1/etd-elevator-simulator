@@ -77,8 +77,20 @@ export class Elevator {
     this._passengerCount = value;
   }
 
+  get state() {
+    return this._state?.stateType;
+  }
+
   get stateTitle() {
     return this._state?.title;
+  }
+
+  get floor() {
+    return this.building.getFloorNumberAtElevation(this.elevation);
+  }
+
+  get closestFloor() {
+    return this.building.getClosestFloorNumberAtElevation(this.elevation);
   }
 
   move(distance: number) {
@@ -86,10 +98,9 @@ export class Elevator {
   }
 
   movePrecisionFix() {
-    const closestFloor = this.building.getClosestFloorNumberAtElevation(
-      this.elevation,
+    this._elevation = this.building.getElevationAtFloorNumber(
+      this.closestFloor,
     );
-    this._elevation = this.building.getElevationAtFloorNumber(closestFloor);
   }
 
   addTime(time: number) {

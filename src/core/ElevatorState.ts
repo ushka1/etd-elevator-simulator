@@ -5,11 +5,11 @@ import {
   determineElevatorMovingDirection,
 } from './elevatorUtils';
 
-enum ElevatorStateType {
-  ElevatorMoving,
-  DoorsOpening,
-  PassengerBoarding,
-  DoorsClosing,
+export enum ElevatorStateType {
+  ElevatorMoving = 'ELEVATOR_MOVING',
+  DoorsOpening = 'DOORS_OPENING',
+  PassengerBoarding = 'PASSENGER_BOARDING',
+  DoorsClosing = 'DOORS_CLOSING',
 }
 
 export abstract class ElevatorState {
