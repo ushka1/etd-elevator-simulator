@@ -1,3 +1,4 @@
+import EventEmitter from 'events';
 import { Elevator } from './Elevator';
 import {
   calculateElevatorMovingDistance,
@@ -5,21 +6,24 @@ import {
   determineElevatorMovingDirection,
 } from './elevatorUtils';
 
-export enum ElevatorStateType {
+type ElevatorCommandEventMap = { start: []; update: []; complete: [] };
+
+export enum ElevatorCommandType {
+  Idle = 'IDLE',
   ElevatorMoving = 'ELEVATOR_MOVING',
   DoorsOpening = 'DOORS_OPENING',
   PassengerBoarding = 'PASSENGER_BOARDING',
   DoorsClosing = 'DOORS_CLOSING',
 }
 
-export abstract class ElevatorState {
+export abstract class ElevatorCommand {
   title?: string;
-  nextState?: ElevatorState;
   private elapsedTime = 0;
+  private emitter = new EventEmitter<ElevatorCommandEventMap>();
 
   constructor(
     public elevator: Elevator,
-    public stateType: ElevatorStateType,
+    public commandType: ElevatorCommandType,
     public duration: number,
   ) {}
 
@@ -44,6 +48,7 @@ export abstract class ElevatorState {
 
     if (this.isCompleted()) {
       this.onCompleteAction?.();
+      this.emitter.emit('complete');
     }
 
     return excessTime;
@@ -64,32 +69,43 @@ export abstract class ElevatorState {
   isCompleted() {
     return this.getRemainingTime() === 0;
   }
+
+  on(
+    event: keyof ElevatorCommandEventMap,
+    listener: (...args: ElevatorCommandEventMap[typeof event]) => void,
+  ) {
+    this.emitter.on(event, listener);
+  }
+
+  once(
+    event: keyof ElevatorCommandEventMap,
+    listener: (...args: ElevatorCommandEventMap[typeof event]) => void,
+  ) {
+    this.emitter.once(event, listener);
+  }
+
+  off(
+    event: keyof ElevatorCommandEventMap,
+    listener: (...args: ElevatorCommandEventMap[typeof event]) => void,
+  ) {
+    this.emitter.off(event, listener);
+  }
 }
 
-type ElevatorStateOptions = {
-  passengersEntering?: number;
-  passengersExiting?: number;
-};
-
-export class ElevatorMovingState extends ElevatorState {
+export class ElevatorMovingCommand extends ElevatorCommand {
   direction: number;
-  targetFloor: number;
+  finalFloor: number;
 
-  constructor(
-    elevator: Elevator,
-    targetFloor: number,
-    options?: ElevatorStateOptions,
-  ) {
+  constructor(elevator: Elevator, finalFloor: number) {
     super(
       elevator,
-      ElevatorStateType.ElevatorMoving,
-      calculateElevatorMovingDuration(elevator, targetFloor),
+      ElevatorCommandType.ElevatorMoving,
+      calculateElevatorMovingDuration(elevator, finalFloor),
     );
 
-    this.title = `Moving to floor ${targetFloor}`;
-    this.direction = determineElevatorMovingDirection(elevator, targetFloor);
-    this.targetFloor = targetFloor;
-    this.nextState = new DoorsOpeningState(elevator, options);
+    this.title = `Moving to floor ${finalFloor}`;
+    this.direction = determineElevatorMovingDirection(elevator, finalFloor);
+    this.finalFloor = finalFloor;
   }
 
   protected override onStartAction(): void {
@@ -107,16 +123,15 @@ export class ElevatorMovingState extends ElevatorState {
   }
 }
 
-export class DoorsOpeningState extends ElevatorState {
-  constructor(elevator: Elevator, options?: ElevatorStateOptions) {
+export class DoorsOpeningCommand extends ElevatorCommand {
+  constructor(elevator: Elevator) {
     super(
       elevator,
-      ElevatorStateType.DoorsOpening,
+      ElevatorCommandType.DoorsOpening,
       elevator.doorsOpeningDuration,
     );
 
     this.title = 'Opening doors';
-    this.nextState = new PassengerBoardingState(this.elevator, options);
   }
 
   protected override onCompleteAction(): void {
@@ -124,21 +139,19 @@ export class DoorsOpeningState extends ElevatorState {
   }
 }
 
-export class PassengerBoardingState extends ElevatorState {
-  passengersEntering: number;
-  passengersExiting: number;
-
-  constructor(elevator: Elevator, options?: ElevatorStateOptions) {
+export class PassengerBoardingCommand extends ElevatorCommand {
+  constructor(
+    elevator: Elevator,
+    public passengersEntering: number,
+    public passengersExiting: number,
+  ) {
     super(
       elevator,
-      ElevatorStateType.PassengerBoarding,
+      ElevatorCommandType.PassengerBoarding,
       elevator.passengerBoardingDuration,
     );
 
     this.title = 'Boarding passengers';
-    this.passengersEntering = options?.passengersEntering ?? 0;
-    this.passengersExiting = options?.passengersExiting ?? 0;
-    this.nextState = new DoorClosingState(this.elevator);
   }
 
   protected override onCompleteAction(): void {
@@ -147,11 +160,11 @@ export class PassengerBoardingState extends ElevatorState {
   }
 }
 
-export class DoorClosingState extends ElevatorState {
-  constructor(elevator: Elevator, _?: ElevatorStateOptions) {
+export class DoorClosingCommand extends ElevatorCommand {
+  constructor(elevator: Elevator) {
     super(
       elevator,
-      ElevatorStateType.DoorsClosing,
+      ElevatorCommandType.DoorsClosing,
       elevator.doorsClosingDuration,
     );
     this.title = 'Closing doors';

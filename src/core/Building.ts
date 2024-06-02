@@ -1,30 +1,30 @@
 export class Building {
   private _maxFloor: number;
-  private maxElevation: number;
+  private _maxElevation: number;
 
-  private floorsNumbers: number[] = [];
-  private numberToElevation: Record<number, number> = {};
-  private elevationToNumber: Record<number, number> = {};
+  private _floorsNumbers: number[] = [];
+  private _numberToElevation: Record<number, number> = {};
+  private _elevationToNumber: Record<number, number> = {};
 
-  constructor(private _minFloor: number, private floorsHeights: number[]) {
-    if (this.floorsHeights.length < 1) {
+  constructor(private _minFloor: number, private _floorsHeights: number[]) {
+    if (this._floorsHeights.length < 1) {
       throw new Error('At least one floor height must be provided.');
     }
 
     let floorNumber = _minFloor;
     let totalElevation = 0;
 
-    floorsHeights.forEach((floorHeight) => {
-      this.floorsNumbers.push(floorNumber);
-      this.numberToElevation[floorNumber] = totalElevation;
-      this.elevationToNumber[totalElevation] = floorNumber;
+    _floorsHeights.forEach((floorHeight) => {
+      this._floorsNumbers.push(floorNumber);
+      this._numberToElevation[floorNumber] = totalElevation;
+      this._elevationToNumber[totalElevation] = floorNumber;
 
       floorNumber++;
       totalElevation += floorHeight;
     });
 
     this._maxFloor = floorNumber - 1;
-    this.maxElevation = totalElevation - floorsHeights[-1];
+    this._maxElevation = totalElevation - _floorsHeights[-1];
   }
 
   get minFloor() {
@@ -36,24 +36,24 @@ export class Building {
   }
 
   /**
-   * @returns The floor number at passed (exact) `elevation` or `undefined` if elevation is invalid.
+   * @returns The floor number at passed (exact) `elevation` or `undefined` if `elevation` is invalid.
    */
   getFloorNumberAtElevation(elevation: number): number | undefined {
-    return this.elevationToNumber[elevation];
+    return this._elevationToNumber[elevation];
   }
 
   /**
-   * @returns The closest floor number to passed `elevation`.
+   * @returns The `floorNumber` that is closest to the passed `elevation`.
    */
   getClosestFloorNumberAtElevation(elevation: number): number {
-    if (elevation < 0 || this.maxElevation < elevation) {
+    if (elevation < 0 || this._maxElevation < elevation) {
       throw new Error('Invalid elevation.');
     }
 
     let closestFloorNumber = Infinity;
     let closestFloorDistance = Infinity;
 
-    this.floorsNumbers.forEach((floorNumber) => {
+    this._floorsNumbers.forEach((floorNumber) => {
       const distance = this.calculateDistanceToFloor(elevation, floorNumber);
       if (distance < closestFloorDistance) {
         closestFloorNumber = floorNumber;
@@ -65,10 +65,10 @@ export class Building {
   }
 
   /**
-   * @returns The elevation at passed `floorNumber`.
+   * @returns The elevation at passed `floor`.
    */
   getElevationAtFloorNumber(floor: number): number {
-    const elevation = this.numberToElevation[floor];
+    const elevation = this._numberToElevation[floor];
     if (elevation === undefined) {
       throw new Error('Invalid floor number.');
     }
@@ -80,29 +80,33 @@ export class Building {
    * @returns The distance required to get from passed `elevation` to `floor`.
    */
   calculateDistanceToFloor(elevation: number, floor: number): number {
-    if (elevation < 0 || this.maxElevation < elevation) {
+    if (elevation < 0 || this._maxElevation < elevation) {
       throw new Error('Invalid elevation.');
     }
     if (floor < this.minFloor || this.maxFloor < floor) {
       throw new Error('Invalid floor number.');
     }
 
-    return Math.abs(elevation - this.numberToElevation[floor]);
+    return Math.abs(elevation - this._numberToElevation[floor]);
   }
 
   /**
-   * @returns The distance required to get from `startFloor` to `endFloor`.
+   * @returns The distance required to get from `initialFloor` to `finalFloor`.
    */
-  calculateDistanceBetweenFloors(startFloor: number, endFloor: number): number {
-    if (startFloor < this.minFloor || this.maxFloor < startFloor) {
-      throw new Error('Invalid startFloor number.');
+  calculateDistanceBetweenFloors(
+    initialFloor: number,
+    finalFloor: number,
+  ): number {
+    if (initialFloor < this.minFloor || this.maxFloor < initialFloor) {
+      throw new Error('Invalid initialFloor number.');
     }
-    if (endFloor < this.minFloor || this.maxFloor < endFloor) {
-      throw new Error('Invalid endFloor number.');
+    if (finalFloor < this.minFloor || this.maxFloor < finalFloor) {
+      throw new Error('Invalid finalFloor number.');
     }
 
     return Math.abs(
-      this.numberToElevation[endFloor] - this.numberToElevation[startFloor],
+      this._numberToElevation[finalFloor] -
+        this._numberToElevation[initialFloor],
     );
   }
 }

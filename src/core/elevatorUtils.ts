@@ -45,18 +45,18 @@ export function sanitizeElevatorConfig(
 }
 
 /**
- * Returns the direction in which the elevator must move to reach the target floor.
+ * Returns the direction in which the elevator must move to reach the final floor.
  */
 export function determineElevatorMovingDirection(
   elevator: Elevator,
-  targetFloor: number,
+  finalFloor: number,
 ): number {
-  const targetElevation =
-    elevator.building.getElevationAtFloorNumber(targetFloor);
+  const finalElevation =
+    elevator.building.getElevationAtFloorNumber(finalFloor);
 
-  if (elevator.elevation < targetElevation) {
+  if (elevator.elevation < finalElevation) {
     return 1;
-  } else if (elevator.elevation === targetElevation) {
+  } else if (elevator.elevation === finalElevation) {
     return 0;
   } else {
     return -1;
@@ -64,16 +64,16 @@ export function determineElevatorMovingDirection(
 }
 
 /**
- * Returns the time it takes for the elevator to move to the target floor.
+ * Returns the time it takes for the elevator to move to the final floor.
  */
 export function calculateElevatorMovingDuration(
   elevator: Elevator,
-  targetFloor: number,
+  finalFloor: number,
 ): number {
   const speed = elevator.speed;
   const distance = elevator.building.calculateDistanceToFloor(
     elevator.elevation,
-    targetFloor,
+    finalFloor,
   );
 
   const time = distance / speed;
