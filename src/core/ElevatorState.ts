@@ -12,7 +12,7 @@ enum ElevatorStateType {
   DoorsClosing,
 }
 
-abstract class ElevatorState {
+export abstract class ElevatorState {
   title?: string;
   nextState?: ElevatorState;
   private elapsedTime = 0;
@@ -98,14 +98,12 @@ export class ElevatorMovingState extends ElevatorState {
 
   protected override onUpdateAction(time: number): void {
     const distance = calculateElevatorMovingDistance(this.elevator, time);
-    this.elevator.elevation += this.direction * distance;
+    this.elevator.move(distance);
   }
 
   protected override onCompleteAction(): void {
     this.elevator.direction = 0;
-    this.elevator.elevation = this.elevator.building.getElevationAtFloorNumber(
-      this.targetFloor,
-    );
+    this.elevator.movePrecisionFix();
   }
 }
 

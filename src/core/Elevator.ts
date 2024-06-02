@@ -1,4 +1,5 @@
 import { Building } from './Building';
+import { ElevatorMovingState, ElevatorState } from './ElevatorState';
 import { sanitizeElevatorConfig } from './elevatorUtils';
 
 export type ElevatorConfig = {
@@ -16,6 +17,8 @@ export class Elevator {
   private _doorsOpened = false;
   private _passengerCount = 0;
 
+  private _state?: ElevatorState;
+
   doorsOpeningDuration = 2000;
   passengerBoardingDuration = 10000;
   doorsClosingDuration = 2000;
@@ -24,6 +27,10 @@ export class Elevator {
     this._config = sanitizeElevatorConfig(building, config);
     this._building = building;
     this._elevation = building.getElevationAtFloorNumber(this.baseFloor);
+
+    this._state = new ElevatorMovingState(this, 4, {
+      passengersEntering: 2,
+    });
   }
 
   get id() {
@@ -44,10 +51,6 @@ export class Elevator {
 
   get elevation() {
     return this._elevation;
-  }
-
-  set elevation(value: number) {
-    this._elevation = value;
   }
 
   get direction() {
@@ -72,5 +75,44 @@ export class Elevator {
 
   set passengerCount(value: number) {
     this._passengerCount = value;
+  }
+
+  get stateTitle() {
+    return this._state?.title;
+  }
+
+  move(distance: number) {
+    this._elevation += this.direction * distance;
+  }
+
+  movePrecisionFix() {
+    const closestFloor = this.building.getClosestFloorNumberAtElevation(
+      this.elevation,
+    );
+    this._elevation = this.building.getElevationAtFloorNumber(closestFloor);
+  }
+
+  addTime(time: number) {
+    let excessTime = time;
+    if (!this._state) {
+      this._state = this.requestNextState();
+    }
+
+    while (this._state && excessTime > 0) {
+      excessTime = this._state.addTime(time);
+
+      if (this._state.isCompleted()) {
+        if (this._state.nextState) {
+          this._state = this._state.nextState;
+          continue;
+        }
+
+        this._state = this.requestNextState();
+      }
+    }
+  }
+
+  requestNextState() {
+    return undefined;
   }
 }

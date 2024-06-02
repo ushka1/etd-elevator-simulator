@@ -5,7 +5,6 @@ import App from './App.tsx';
 import './assets/input.css';
 import { Building } from './core/Building.ts';
 import { Elevator } from './core/Elevator.ts';
-import { ElevatorMovingState } from './core/ElevatorState.ts';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -13,27 +12,22 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   </React.StrictMode>,
 );
 
-const building = new Building(0, [2, 2, 2, 2, 2, 2]);
-const elevator = new Elevator(building, { id: 'A' });
+const building = new Building(-1, new Array(10).fill(2));
+const elevator = new Elevator(building, { id: 'A', baseFloor: 8 });
 
-let state;
+console.log(elevator.stateTitle, '|', elevator.elevation);
+elevator.addTime(2000);
+console.log(elevator.stateTitle, '|', elevator.elevation);
+elevator.addTime(2000);
+console.log(elevator.stateTitle, '|', elevator.elevation);
+elevator.addTime(2000);
+console.log(elevator.stateTitle, '|', elevator.elevation);
+elevator.addTime(2000);
+console.log(elevator.stateTitle, '|', elevator.elevation);
 
-state = new ElevatorMovingState(elevator, 3, {
-  passengersEntering: 1,
-});
-state.addTime(10000);
-
-state = state.nextState!;
-state.addTime(10000);
-
-console.log(elevator.doorsOpened);
-
-state = state.nextState!;
-state.addTime(10000);
-
-console.log(elevator.passengerCount);
-
-state = state.nextState!;
-state.addTime(10000);
-
-console.log(elevator.doorsOpened);
+elevator.addTime(2000);
+console.log(elevator.stateTitle, '|', elevator.doorsOpened);
+elevator.addTime(10000);
+console.log(elevator.stateTitle, '|', elevator.passengerCount);
+elevator.addTime(2000);
+console.log(elevator.stateTitle, '|', elevator.doorsOpened);

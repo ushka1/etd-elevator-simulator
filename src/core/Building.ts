@@ -43,6 +43,28 @@ export class Building {
   }
 
   /**
+   * @returns The closest floor number to passed `elevation`.
+   */
+  getClosestFloorNumberAtElevation(elevation: number): number {
+    if (elevation < 0 || this.maxElevation < elevation) {
+      throw new Error('Invalid elevation.');
+    }
+
+    let closestFloorNumber = Infinity;
+    let closestFloorDistance = Infinity;
+
+    this.floorsNumbers.forEach((floorNumber) => {
+      const distance = this.calculateDistanceToFloor(elevation, floorNumber);
+      if (distance < closestFloorDistance) {
+        closestFloorNumber = floorNumber;
+        closestFloorDistance = distance;
+      }
+    });
+
+    return closestFloorNumber;
+  }
+
+  /**
    * @returns The elevation at passed `floorNumber`.
    */
   getElevationAtFloorNumber(floor: number): number {
