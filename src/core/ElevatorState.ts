@@ -1,20 +1,19 @@
 import { Elevator } from './Elevator';
 import {
   calculateElevatorMovingDistance,
-  calculateElevatorMovingDuration,
+  calculateElevatorMovingTime,
   determineElevatorMovingDirection,
 } from './elevatorUtils';
 
-enum ElevatorStateType {
-  ElevatorMoving,
-  DoorsOpening,
-  PassengerBoarding,
-  DoorsClosing,
+export enum ElevatorStateType {
+  ElevatorMoving = 'ELEVATOR_MOVING',
+  DoorsOpening = 'DOORS_OPENING',
+  PassengerBoarding = 'PASSENGER_BOARDING',
+  DoorsClosing = 'DOORS_CLOSING',
 }
 
 export abstract class ElevatorState {
   title?: string;
-  nextState?: ElevatorState;
   private elapsedTime = 0;
 
   constructor(
@@ -66,30 +65,20 @@ export abstract class ElevatorState {
   }
 }
 
-type ElevatorStateOptions = {
-  passengersEntering?: number;
-  passengersExiting?: number;
-};
-
 export class ElevatorMovingState extends ElevatorState {
   direction: number;
-  targetFloor: number;
+  finalFloor: number;
 
-  constructor(
-    elevator: Elevator,
-    targetFloor: number,
-    options?: ElevatorStateOptions,
-  ) {
+  constructor(elevator: Elevator, finalFloor: number) {
     super(
       elevator,
       ElevatorStateType.ElevatorMoving,
-      calculateElevatorMovingDuration(elevator, targetFloor),
+      calculateElevatorMovingTime(elevator, finalFloor),
     );
 
-    this.title = `Moving to floor ${targetFloor}`;
-    this.direction = determineElevatorMovingDirection(elevator, targetFloor);
-    this.targetFloor = targetFloor;
-    this.nextState = new DoorsOpeningState(elevator, options);
+    this.title = `Moving to floor ${finalFloor}`;
+    this.direction = determineElevatorMovingDirection(elevator, finalFloor);
+    this.finalFloor = finalFloor;
   }
 
   protected override onStartAction(): void {
@@ -108,15 +97,10 @@ export class ElevatorMovingState extends ElevatorState {
 }
 
 export class DoorsOpeningState extends ElevatorState {
-  constructor(elevator: Elevator, options?: ElevatorStateOptions) {
-    super(
-      elevator,
-      ElevatorStateType.DoorsOpening,
-      elevator.doorsOpeningDuration,
-    );
+  constructor(elevator: Elevator) {
+    super(elevator, ElevatorStateType.DoorsOpening, elevator.doorsOpeningTime);
 
     this.title = 'Opening doors';
-    this.nextState = new PassengerBoardingState(this.elevator, options);
   }
 
   protected override onCompleteAction(): void {
@@ -124,21 +108,25 @@ export class DoorsOpeningState extends ElevatorState {
   }
 }
 
+type PassengerBoardingStateOptions = {
+  passengersEntering?: number;
+  passengersExiting?: number;
+};
+
 export class PassengerBoardingState extends ElevatorState {
   passengersEntering: number;
   passengersExiting: number;
 
-  constructor(elevator: Elevator, options?: ElevatorStateOptions) {
+  constructor(elevator: Elevator, options?: PassengerBoardingStateOptions) {
     super(
       elevator,
       ElevatorStateType.PassengerBoarding,
-      elevator.passengerBoardingDuration,
+      elevator.passengerBoardingTime,
     );
 
     this.title = 'Boarding passengers';
     this.passengersEntering = options?.passengersEntering ?? 0;
     this.passengersExiting = options?.passengersExiting ?? 0;
-    this.nextState = new DoorClosingState(this.elevator);
   }
 
   protected override onCompleteAction(): void {
@@ -148,12 +136,8 @@ export class PassengerBoardingState extends ElevatorState {
 }
 
 export class DoorClosingState extends ElevatorState {
-  constructor(elevator: Elevator, _?: ElevatorStateOptions) {
-    super(
-      elevator,
-      ElevatorStateType.DoorsClosing,
-      elevator.doorsClosingDuration,
-    );
+  constructor(elevator: Elevator) {
+    super(elevator, ElevatorStateType.DoorsClosing, elevator.doorsClosingTime);
     this.title = 'Closing doors';
   }
 

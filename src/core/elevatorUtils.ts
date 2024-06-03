@@ -1,5 +1,9 @@
 import { Building } from './Building';
 import { Elevator, ElevatorConfig } from './Elevator';
+import {
+  calculateDistanceToFloor,
+  getElevationAtFloorNumber,
+} from './buildingUtils';
 
 /**
  * Returns a validated and sanitized elevator configuration. For every non specified
@@ -12,7 +16,10 @@ export function sanitizeElevatorConfig(
 ): Required<ElevatorConfig> {
   const id = config.id;
 
-  let speed = 0.001;
+  const metersPerSecond = 1;
+  const metersPerMilisecond = metersPerSecond / 1000;
+
+  let speed = metersPerMilisecond;
   if (config.speed != undefined) {
     if (config.speed <= 0) {
       console.error(
@@ -51,8 +58,10 @@ export function determineElevatorMovingDirection(
   elevator: Elevator,
   targetFloor: number,
 ): number {
-  const targetElevation =
-    elevator.building.getElevationAtFloorNumber(targetFloor);
+  const targetElevation = getElevationAtFloorNumber(
+    elevator.building,
+    targetFloor,
+  );
 
   if (elevator.elevation < targetElevation) {
     return 1;
@@ -66,12 +75,13 @@ export function determineElevatorMovingDirection(
 /**
  * Returns the time it takes for the elevator to move to the target floor.
  */
-export function calculateElevatorMovingDuration(
+export function calculateElevatorMovingTime(
   elevator: Elevator,
   targetFloor: number,
 ): number {
-  const speed = elevator.speed;
-  const distance = elevator.building.calculateDistanceToFloor(
+  const speed = elevator.config.speed;
+  const distance = calculateDistanceToFloor(
+    elevator.building,
     elevator.elevation,
     targetFloor,
   );
@@ -87,5 +97,5 @@ export function calculateElevatorMovingDistance(
   elevator: Elevator,
   time: number,
 ) {
-  return time * elevator.speed;
+  return time * elevator.config.speed;
 }
