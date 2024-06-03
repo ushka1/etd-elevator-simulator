@@ -96,11 +96,21 @@ export class ElevatorMovingState extends ElevatorState {
   }
 }
 
+type DoorsOpeningStateOptions = {
+  entering?: number;
+  exiting?: number;
+};
+
 export class DoorsOpeningState extends ElevatorState {
-  constructor(elevator: Elevator) {
+  entering: number;
+  exiting: number;
+
+  constructor(elevator: Elevator, options: DoorsOpeningStateOptions) {
     super(elevator, ElevatorStateType.DoorsOpening, elevator.doorsOpeningTime);
 
     this.title = 'Opening doors';
+    this.entering = options?.entering ?? 0;
+    this.exiting = options?.exiting ?? 0;
   }
 
   protected override onCompleteAction(): void {
@@ -109,13 +119,13 @@ export class DoorsOpeningState extends ElevatorState {
 }
 
 type PassengerBoardingStateOptions = {
-  passengersEntering?: number;
-  passengersExiting?: number;
+  entering?: number;
+  exiting?: number;
 };
 
 export class PassengerBoardingState extends ElevatorState {
-  passengersEntering: number;
-  passengersExiting: number;
+  entering: number;
+  exiting: number;
 
   constructor(elevator: Elevator, options?: PassengerBoardingStateOptions) {
     super(
@@ -125,13 +135,12 @@ export class PassengerBoardingState extends ElevatorState {
     );
 
     this.title = 'Boarding passengers';
-    this.passengersEntering = options?.passengersEntering ?? 0;
-    this.passengersExiting = options?.passengersExiting ?? 0;
+    this.entering = options?.entering ?? 0;
+    this.exiting = options?.exiting ?? 0;
   }
 
   protected override onCompleteAction(): void {
-    this.elevator.passengerCount +=
-      this.passengersEntering - this.passengersExiting;
+    this.elevator.passengerCount += this.entering - this.exiting;
   }
 }
 

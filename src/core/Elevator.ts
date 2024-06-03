@@ -33,9 +33,9 @@ export class Elevator {
 
   state?: ElevatorState;
 
-  doorsOpeningTime = 2500;
-  passengerBoardingTime = 5000;
-  doorsClosingTime = 2500;
+  doorsOpeningTime = 2000;
+  passengerBoardingTime = 8000;
+  doorsClosingTime = 2000;
 
   constructor(building: Building, config: ElevatorConfig) {
     this.config = sanitizeElevatorConfig(building, config);
@@ -64,7 +64,7 @@ export class Elevator {
     this.elevation = getElevationAtFloorNumber(this.building, closestFloor);
   }
 
-  i = 10000; // preventing eventual overflow
+  i = 10000;
   addTime(time: number) {
     let excessTime = time;
     this.checkState();
@@ -79,23 +79,23 @@ export class Elevator {
   }
 
   checkState() {
-    const node = this.routePlanner.requestNode();
-    if (!node) {
-      if (this.state?.isCompleted()) {
-        this.state = undefined;
-      }
-
-      return;
-    }
-
     if (!this.state) {
       // Idle state.
+      const node = this.routePlanner.previewNode();
+      if (!node) {
+        return;
+      }
+
       if (this.floor !== node.floor) {
         // Not at correct floor.
         this.state = new ElevatorMovingState(this, node.floor);
       } else {
         // At correct floor.
-        this.state = new DoorsOpeningState(this);
+        this.state = new DoorsOpeningState(this, {
+          entering: node.entering,
+          exiting: node.exiting,
+        });
+        this.routePlanner.consumeNode();
       }
 
       return;
@@ -110,6 +110,11 @@ export class Elevator {
         return;
       }
 
+      const node = this.routePlanner.previewNode();
+      if (!node) {
+        return;
+      }
+
       if (state.finalFloor !== node.floor) {
         // Destination floor changed, re-calculate moving state.
         this.state = new ElevatorMovingState(this, node.floor);
@@ -119,10 +124,11 @@ export class Elevator {
     }
 
     if (this.state.stateType === ElevatorStateType.DoorsOpening) {
+      const state = this.state as DoorsOpeningState;
       if (this.state.isCompleted()) {
         this.state = new PassengerBoardingState(this, {
-          passengersEntering: node.entering,
-          passengersExiting: node.exiting,
+          entering: state.entering,
+          exiting: state.exiting,
         });
       }
 
@@ -130,28 +136,23 @@ export class Elevator {
     }
 
     if (this.state.stateType === ElevatorStateType.PassengerBoarding) {
-      const state = this.state as PassengerBoardingState;
-
-      if (state.isCompleted()) {
-        node.servePassengers(
-          state.passengersEntering + state.passengersExiting,
-        );
-
+      if (this.state.isCompleted()) {
         this.state = new DoorClosingState(this);
         return;
       }
 
-      if (
-        state.passengersEntering !== node.entering ||
-        state.passengersExiting !== node.exiting
-      ) {
-        // Passenger count changed, re-calculate boarding state.
-        this.state = new PassengerBoardingState(this, {
-          passengersEntering: node.entering,
-          passengersExiting: node.exiting,
+      let node = this.routePlanner.previewNode();
+      while (node && node.floor === this.floor) {
+        // Additional passengers are entering or exiting.
+        const currentState = this.state as PassengerBoardingState;
+        const updatedState = new PassengerBoardingState(this, {
+          entering: currentState.entering + node.entering,
+          exiting: currentState.exiting + node.exiting,
         });
+        this.state = updatedState;
+        this.routePlanner.consumeNode();
+        node = this.routePlanner.previewNode();
       }
-      return;
     }
 
     if (this.state.stateType === ElevatorStateType.DoorsClosing) {
@@ -159,8 +160,6 @@ export class Elevator {
         this.state = undefined;
         this.checkState();
       }
-
-      return;
     }
   }
 }

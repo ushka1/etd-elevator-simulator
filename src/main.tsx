@@ -5,7 +5,7 @@ import App from './App.tsx';
 import './assets/input.css';
 import { Building } from './core/Building.ts';
 import { Elevator } from './core/Elevator.ts';
-import { RoutePlannerNode } from './core/RoutePlanner.ts';
+import { RouteNode } from './core/RoutePlanner.ts';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -16,18 +16,25 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 const building = new Building(-1, new Array(10).fill(3));
 const elevator = new Elevator(building, { id: 'A', baseFloor: 0 });
 
-elevator.routePlanner.nodes = [
-  new RoutePlannerNode(1, 1, 0),
-  new RoutePlannerNode(7, 0, 1),
-];
+elevator.routePlanner.updateRoute([
+  new RouteNode(1, 1, 0),
+  new RouteNode(7, 0, 1),
+]);
 
-console.log(elevator.routePlanner.findBestRoute(3, 4));
+for (let i = 0; i < 40; i++) {
+  elevator.addTime(1000);
+  console.log(elevator.stateTitle, '|', elevator.elevation);
+}
 
-// routes.forEach((route) => {
-//   console.log(route);
-// });
+elevator.routePlanner.updateRoute([
+  new RouteNode(7, 1, 0),
+  new RouteNode(7, 1, 0),
+  new RouteNode(7, 1, 0),
+]);
 
-// for (let i = 0; i < 100; i++) {
-//   elevator.addTime(1000);
-//   console.log(elevator.stateTitle, '|', elevator.elevation);
-// }
+for (let i = 0; i < 40; i++) {
+  elevator.addTime(1000);
+  console.log(elevator.stateTitle, '|', elevator.elevation);
+}
+
+console.log(elevator.passengerCount);
