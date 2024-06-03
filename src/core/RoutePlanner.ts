@@ -14,7 +14,7 @@ export class RoutePlanner {
 
   constructor(public elevator: Elevator) {}
 
-  previewNode(): RouteNode | undefined {
+  peekNode(): RouteNode | undefined {
     return this.route[0];
   }
 
@@ -23,21 +23,21 @@ export class RoutePlanner {
   }
 
   findBestRoute(initialFloor: number, finalFloor: number): RouteNode[] {
-    const routes = [];
+    const candidates = [];
 
     for (let i = 0; i < this.route.length + 1; i++) {
       for (let j = i; j < this.route.length + 1; j++) {
-        const nodes = [...this.route];
-        nodes.splice(i, 0, new RouteNode(initialFloor, 1, 0));
-        nodes.splice(j + 1, 0, new RouteNode(finalFloor, 0, 1));
+        const route = [...this.route];
+        route.splice(i, 0, new RouteNode(initialFloor, 1, 0));
+        route.splice(j + 1, 0, new RouteNode(finalFloor, 0, 1));
 
-        const cost = calculateRouteCost(this.elevator, nodes, i, j + 1);
-        routes.push([nodes, cost] as const);
+        const cost = calculateRouteCost(this.elevator, route, i, j + 1);
+        candidates.push([route, cost] as const);
       }
     }
 
-    routes.sort((r1, r2) => r1[1] - r2[1]);
-    return routes[0][0];
+    candidates.sort((r1, r2) => r1[1] - r2[1]);
+    return candidates[0][0];
   }
 
   updateRoute(route: RouteNode[]) {

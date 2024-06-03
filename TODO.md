@@ -1,3 +1,4 @@
 # TODO
 
-1. Think about rounding when calculating time. Currently use 1 as speed.
+1. Think about max capacity.
+1. Think about RouteNode merging.

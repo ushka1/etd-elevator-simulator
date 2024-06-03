@@ -9,47 +9,37 @@ import {
 } from './ElevatorState';
 import { RoutePlanner } from './RoutePlanner';
 import {
-  getClosestFloorNumberAtElevation,
-  getElevationAtFloorNumber,
-  getFloorNumberAtElevation,
+  getClosestFloorNumber,
+  getFloorElevation,
+  getFloorNumber,
 } from './buildingUtils';
-import { sanitizeElevatorConfig } from './elevatorUtils';
-
-export type ElevatorConfig = {
-  id: string;
-  speed?: number;
-  baseFloor?: number;
-};
+import { ElevatorConfig, sanitizeElevatorConfig } from './elevatorUtils';
 
 export class Elevator {
   config: Required<ElevatorConfig>;
   building: Building;
-  elevation: number;
   routePlanner: RoutePlanner;
 
   direction = 0;
+  elevation: number;
   doorsOpened = false;
   passengerCount = 0;
 
   state?: ElevatorState;
 
-  doorsOpeningTime = 2000;
-  passengerBoardingTime = 8000;
-  doorsClosingTime = 2000;
-
   constructor(building: Building, config: ElevatorConfig) {
     this.config = sanitizeElevatorConfig(building, config);
     this.building = building;
-    this.elevation = getElevationAtFloorNumber(building, this.config.baseFloor);
     this.routePlanner = new RoutePlanner(this);
+    this.elevation = getFloorElevation(building, this.config.baseFloor);
   }
 
   get stateTitle() {
-    return this.state?.title;
+    return this.state?.title ?? 'Idle';
   }
 
   get floor() {
-    return getFloorNumberAtElevation(this.building, this.elevation);
+    return getFloorNumber(this.building, this.elevation);
   }
 
   move(distance: number) {
@@ -57,11 +47,8 @@ export class Elevator {
   }
 
   movePrecisionFix() {
-    const closestFloor = getClosestFloorNumberAtElevation(
-      this.building,
-      this.elevation,
-    );
-    this.elevation = getElevationAtFloorNumber(this.building, closestFloor);
+    const closestFloor = getClosestFloorNumber(this.building, this.elevation);
+    this.elevation = getFloorElevation(this.building, closestFloor);
   }
 
   i = 10000;
@@ -81,7 +68,7 @@ export class Elevator {
   checkState() {
     if (!this.state) {
       // Idle state.
-      const node = this.routePlanner.previewNode();
+      const node = this.routePlanner.peekNode();
       if (!node) {
         return;
       }
@@ -110,7 +97,7 @@ export class Elevator {
         return;
       }
 
-      const node = this.routePlanner.previewNode();
+      const node = this.routePlanner.peekNode();
       if (!node) {
         return;
       }
@@ -141,7 +128,7 @@ export class Elevator {
         return;
       }
 
-      let node = this.routePlanner.previewNode();
+      let node = this.routePlanner.peekNode();
       while (node && node.floor === this.floor) {
         // Additional passengers are entering or exiting.
         const currentState = this.state as PassengerBoardingState;
@@ -151,7 +138,7 @@ export class Elevator {
         });
         this.state = updatedState;
         this.routePlanner.consumeNode();
-        node = this.routePlanner.previewNode();
+        node = this.routePlanner.peekNode();
       }
     }
 

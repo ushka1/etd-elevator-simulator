@@ -1,9 +1,9 @@
 import { Building } from './Building';
 
 /**
- * @returns The floor number at passed (exact) `elevation` or `undefined` if elevation is invalid.
+ * @returns The floor number of passed `elevation`.
  */
-export function getFloorNumberAtElevation(
+export function getFloorNumber(
   building: Building,
   elevation: number,
 ): number | undefined {
@@ -11,9 +11,9 @@ export function getFloorNumberAtElevation(
 }
 
 /**
- * @returns The closest floor number to passed `elevation`.
+ * @returns The floor number of the closest floor to passed `elevation`.
  */
-export function getClosestFloorNumberAtElevation(
+export function getClosestFloorNumber(
   building: Building,
   elevation: number,
 ): number {
@@ -36,12 +36,9 @@ export function getClosestFloorNumberAtElevation(
 }
 
 /**
- * @returns The elevation at passed `floorNumber`.
+ * @returns The elevation of passed `floor`.
  */
-export function getElevationAtFloorNumber(
-  building: Building,
-  floor: number,
-): number {
+export function getFloorElevation(building: Building, floor: number): number {
   const elevation = building.numberToElevation[floor];
   if (elevation === undefined) {
     throw new Error('Invalid floor number.');
@@ -51,7 +48,7 @@ export function getElevationAtFloorNumber(
 }
 
 /**
- * @returns The distance required to get from passed `elevation` to `finalFloor`.
+ * @returns The distance required to get from `elevation` to `finalFloor`.
  */
 export function calculateDistanceToFloor(
   building: Building,

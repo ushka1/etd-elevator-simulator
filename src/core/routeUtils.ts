@@ -8,19 +8,17 @@ import {
 
 export function calculateRouteCost(
   elevator: Elevator,
-  nodes: RouteNode[],
+  route: RouteNode[],
   idx1: number,
   idx2: number,
 ): number {
-  const routeLength = nodes.length;
+  let routeTime = 0; // Total route time of inserted passenger.
+  let delayedPassengers1 = 0; // Number of passengers delayed by the first insertion.
+  let delayedPassengers2 = 0; // Number of passengers delayed by the second insertion.
 
-  let routeTime = 0;
-  let delayedPassengers1 = 0;
-  let delayedPassengers2 = 0;
-
-  for (let i = 0; i < nodes.length; i++) {
-    const prev = i > 0 ? nodes[i - 1] : null;
-    const curr = nodes[i];
+  for (let i = 0; i < route.length; i++) {
+    const prev = i > 0 ? route[i - 1] : null;
+    const curr = route[i];
 
     let time = 0;
     if (i === 0) {
@@ -34,12 +32,12 @@ export function calculateRouteCost(
     routeTime += time;
 
     if (idx1 < i && i < idx2) {
-      if (nodes[idx1].floor !== curr.floor) {
+      if (route[idx1].floor !== curr.floor) {
         delayedPassengers1 += curr.exiting;
       }
     }
     if (idx2 < i) {
-      if (nodes[idx2].floor !== curr.floor) {
+      if (route[idx2].floor !== curr.floor) {
         delayedPassengers1 += curr.exiting;
         delayedPassengers2 += curr.exiting;
       }
@@ -47,10 +45,10 @@ export function calculateRouteCost(
   }
 
   if (idx1 + 1 === idx2) {
-    const node1 = idx1 > 0 ? nodes[idx1 - 1] : null;
-    const node2 = nodes[idx1];
-    const node3 = nodes[idx2];
-    const node4 = idx2 + 1 < routeLength ? nodes[idx2 + 1] : null;
+    const node1 = idx1 > 0 ? route[idx1 - 1] : null;
+    const node2 = route[idx1];
+    const node3 = route[idx2];
+    const node4 = idx2 + 1 < route.length ? route[idx2 + 1] : null;
 
     let o1 = 0;
     let d1 = 0;
@@ -83,9 +81,9 @@ export function calculateRouteCost(
     const delay = d1 + d2 + d3 - o1;
     return routeTime + delay * delayedPassengers2;
   } else {
-    const node1 = idx1 > 0 ? nodes[idx1 - 1] : null;
-    const node2 = nodes[idx1];
-    const node3 = nodes[idx1 + 1];
+    const node1 = idx1 > 0 ? route[idx1 - 1] : null;
+    const node2 = route[idx1];
+    const node3 = route[idx1 + 1];
     let o1 = 0;
     let d1 = 0;
     let d2 = 0;
@@ -103,9 +101,9 @@ export function calculateRouteCost(
     if (d2 > 0) d2 += calculateFloorServiceTime(elevator);
     if (o1 > 0) o1 += calculateFloorServiceTime(elevator);
 
-    const node4 = nodes[idx2 - 1];
-    const node5 = nodes[idx2];
-    const node6 = idx2 + 1 < routeLength ? nodes[idx2 + 1] : null;
+    const node4 = route[idx2 - 1];
+    const node5 = route[idx2];
+    const node6 = idx2 + 1 < route.length ? route[idx2 + 1] : null;
     let o2 = 0;
     let d3 = 0;
     let d4 = 0;

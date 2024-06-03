@@ -1,9 +1,6 @@
 import { Elevator } from './Elevator';
-import {
-  calculateElevatorMovingDistance,
-  calculateElevatorMovingTime,
-  determineElevatorMovingDirection,
-} from './elevatorUtils';
+import { determineElevatorMovingDirection } from './elevatorUtils';
+import { calculateElevatorToFloorTime } from './timeUtils';
 
 export enum ElevatorStateType {
   ElevatorMoving = 'ELEVATOR_MOVING',
@@ -36,10 +33,10 @@ export abstract class ElevatorState {
     }
 
     const excessTime = this.getExcessTime(time);
-    const validTime = time - excessTime;
+    const normalizedTime = time - excessTime;
 
-    this.elapsedTime += validTime;
-    this.onUpdateAction?.(validTime);
+    this.elapsedTime += normalizedTime;
+    this.onUpdateAction?.(normalizedTime);
 
     if (this.isCompleted()) {
       this.onCompleteAction?.();
@@ -73,7 +70,7 @@ export class ElevatorMovingState extends ElevatorState {
     super(
       elevator,
       ElevatorStateType.ElevatorMoving,
-      calculateElevatorMovingTime(elevator, finalFloor),
+      calculateElevatorToFloorTime(elevator, finalFloor),
     );
 
     this.title = `Moving to floor ${finalFloor}`;
@@ -86,7 +83,8 @@ export class ElevatorMovingState extends ElevatorState {
   }
 
   protected override onUpdateAction(time: number): void {
-    const distance = calculateElevatorMovingDistance(this.elevator, time);
+    const speed = this.elevator.config.speed;
+    const distance = time * speed;
     this.elevator.move(distance);
   }
 
@@ -106,7 +104,11 @@ export class DoorsOpeningState extends ElevatorState {
   exiting: number;
 
   constructor(elevator: Elevator, options: DoorsOpeningStateOptions) {
-    super(elevator, ElevatorStateType.DoorsOpening, elevator.doorsOpeningTime);
+    super(
+      elevator,
+      ElevatorStateType.DoorsOpening,
+      elevator.config.doorsOpeningTime,
+    );
 
     this.title = 'Opening doors';
     this.entering = options?.entering ?? 0;
@@ -131,7 +133,7 @@ export class PassengerBoardingState extends ElevatorState {
     super(
       elevator,
       ElevatorStateType.PassengerBoarding,
-      elevator.passengerBoardingTime,
+      elevator.config.passengerBoardingTime,
     );
 
     this.title = 'Boarding passengers';
@@ -146,7 +148,11 @@ export class PassengerBoardingState extends ElevatorState {
 
 export class DoorClosingState extends ElevatorState {
   constructor(elevator: Elevator) {
-    super(elevator, ElevatorStateType.DoorsClosing, elevator.doorsClosingTime);
+    super(
+      elevator,
+      ElevatorStateType.DoorsClosing,
+      elevator.config.doorsClosingTime,
+    );
     this.title = 'Closing doors';
   }
 

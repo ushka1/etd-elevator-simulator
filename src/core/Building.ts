@@ -1,29 +1,39 @@
 export class Building {
-  public maxFloor: number;
-  public maxElevation: number;
+  floorsHeights: number[];
+  floorsNumbers: number[] = [];
 
-  public floorsNumbers: number[] = [];
-  public numberToElevation: Record<number, number> = {};
-  public elevationToNumber: Record<number, number> = {};
+  numberToElevation: Record<number, number> = {};
+  elevationToNumber: Record<number, number> = {};
 
-  constructor(public minFloor: number, public floorsHeights: number[]) {
-    if (this.floorsHeights.length < 1) {
+  constructor(minFloor: number, floorsHeights: number[]) {
+    if (floorsHeights.length <= 0) {
       throw new Error('At least one floor height must be provided.');
     }
 
-    let floorNumber = minFloor;
-    let totalElevation = 0;
+    this.floorsHeights = floorsHeights;
 
-    floorsHeights.forEach((floorHeight) => {
-      this.floorsNumbers.push(floorNumber);
-      this.numberToElevation[floorNumber] = totalElevation;
-      this.elevationToNumber[totalElevation] = floorNumber;
+    let number = minFloor;
+    let elevation = 0;
 
-      floorNumber++;
-      totalElevation += floorHeight;
+    floorsHeights.forEach((height) => {
+      this.floorsNumbers.push(number);
+      this.numberToElevation[number] = elevation;
+      this.elevationToNumber[elevation] = number;
+
+      number++;
+      elevation += height;
     });
+  }
 
-    this.maxFloor = floorNumber - 1;
-    this.maxElevation = totalElevation - floorsHeights[-1];
+  get minFloor() {
+    return this.floorsNumbers[0];
+  }
+
+  get maxFloor() {
+    return this.floorsNumbers[this.floorsNumbers.length - 1];
+  }
+
+  get maxElevation() {
+    return this.numberToElevation[this.maxFloor];
   }
 }
