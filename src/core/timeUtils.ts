@@ -42,7 +42,30 @@ export function calculateFloorServiceTime(elevator: Elevator) {
   );
 }
 
-export function calculateAdditionalReboardingTime(elevator: Elevator) {
+export function calculateFinishBoardingTime(elevator: Elevator) {
+  const state = elevator.state;
+  const stateType = state?.stateType;
+
+  switch (stateType) {
+    case ElevatorStateType.DoorsOpening:
+      return (
+        state!.getRemainingTime() +
+        elevator.config.passengerBoardingTime +
+        elevator.config.doorsClosingTime
+      );
+
+    case ElevatorStateType.PassengerBoarding:
+      return state!.getRemainingTime() + elevator.config.doorsClosingTime;
+
+    case ElevatorStateType.DoorsClosing:
+      return state!.getRemainingTime();
+
+    default:
+      return 0;
+  }
+}
+
+export function calculateAdditionalBoardingTime(elevator: Elevator) {
   const state = elevator.state;
   const stateType = state?.stateType;
 
@@ -62,5 +85,33 @@ export function calculateAdditionalReboardingTime(elevator: Elevator) {
 
     default:
       return 0;
+  }
+}
+
+export function calculateFloorToFloorWithServiceTime(
+  elevator: Elevator,
+  initialFloor: number,
+  finalFloor: number,
+) {
+  let time = calculateFloorToFloorTime(elevator, initialFloor, finalFloor);
+  if (initialFloor !== finalFloor) {
+    time += calculateFloorServiceTime(elevator);
+  }
+
+  return time;
+}
+
+export function calculateElevatorToFloorWithServiceTime(
+  elevator: Elevator,
+  floor: number,
+) {
+  if (elevator.floor === floor) {
+    return calculateAdditionalBoardingTime(elevator);
+  } else {
+    return (
+      calculateFinishBoardingTime(elevator) +
+      calculateElevatorToFloorTime(elevator, floor) +
+      calculateFloorServiceTime(elevator)
+    );
   }
 }

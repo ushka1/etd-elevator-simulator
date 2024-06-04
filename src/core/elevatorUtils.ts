@@ -3,12 +3,12 @@ import { Building } from './Building';
 import { Elevator } from './Elevator';
 import { getFloorElevation } from './buildingUtils';
 
-const metersPerSecond = 1;
+const metersPerSecond = 0.25;
 const metersPerMilisecond = metersPerSecond / 1000;
 
 const SPEED = metersPerMilisecond;
 const DOORS_OPENING_TIME = 2000;
-const PASSENGER_BOARDING_TIME = 8000;
+const PASSENGER_BOARDING_TIME = 6000;
 const DOORS_CLOSING_TIME = 2000;
 
 const elevatorConfigSchema = (building: Building) =>

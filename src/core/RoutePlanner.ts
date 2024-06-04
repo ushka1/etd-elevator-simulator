@@ -22,8 +22,15 @@ export class RoutePlanner {
     return this.route.shift();
   }
 
-  findBestRoute(initialFloor: number, finalFloor: number): RouteNode[] {
-    const candidates = [];
+  updateRoute(route: RouteNode[]) {
+    this.route = route;
+  }
+
+  findBestRoute(
+    initialFloor: number,
+    finalFloor: number,
+  ): [RouteNode[], number] {
+    const candidates: [RouteNode[], number][] = [];
 
     for (let i = 0; i < this.route.length + 1; i++) {
       for (let j = i; j < this.route.length + 1; j++) {
@@ -32,15 +39,11 @@ export class RoutePlanner {
         route.splice(j + 1, 0, new RouteNode(finalFloor, 0, 1));
 
         const cost = calculateRouteCost(this.elevator, route, i, j + 1);
-        candidates.push([route, cost] as const);
+        candidates.push([route, cost]);
       }
     }
 
     candidates.sort((r1, r2) => r1[1] - r2[1]);
-    return candidates[0][0];
-  }
-
-  updateRoute(route: RouteNode[]) {
-    this.route = route;
+    return candidates[0];
   }
 }

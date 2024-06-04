@@ -51,21 +51,19 @@ export class Elevator {
     this.elevation = getFloorElevation(this.building, closestFloor);
   }
 
-  i = 10000;
   addTime(time: number) {
     let excessTime = time;
-    this.checkState();
+    this.updateState();
 
-    while (this.state && excessTime > 0 && this.i > 0) {
+    while (this.state && excessTime > 0) {
       excessTime = this.state.addTime(time);
-      this.checkState();
-      this.i--;
+      this.updateState();
     }
 
     return excessTime;
   }
 
-  checkState() {
+  updateState() {
     if (!this.state) {
       // Idle state.
       const node = this.routePlanner.peekNode();
@@ -90,10 +88,9 @@ export class Elevator {
 
     if (this.state.stateType === ElevatorStateType.ElevatorMoving) {
       const state = this.state as ElevatorMovingState;
-
-      if (this.state.isCompleted()) {
+      if (state.isCompleted()) {
         this.state = undefined;
-        this.checkState();
+        this.updateState();
         return;
       }
 
@@ -112,7 +109,7 @@ export class Elevator {
 
     if (this.state.stateType === ElevatorStateType.DoorsOpening) {
       const state = this.state as DoorsOpeningState;
-      if (this.state.isCompleted()) {
+      if (state.isCompleted()) {
         this.state = new PassengerBoardingState(this, {
           entering: state.entering,
           exiting: state.exiting,
@@ -128,24 +125,27 @@ export class Elevator {
         return;
       }
 
-      let node = this.routePlanner.peekNode();
-      while (node && node.floor === this.floor) {
-        // Additional passengers are entering or exiting.
+      while (
+        this.routePlanner.peekNode() &&
+        this.routePlanner.peekNode()!.floor === this.floor
+      ) {
+        // Additional passengers are serviced.
+        const node = this.routePlanner.consumeNode()!;
+
         const currentState = this.state as PassengerBoardingState;
         const updatedState = new PassengerBoardingState(this, {
           entering: currentState.entering + node.entering,
           exiting: currentState.exiting + node.exiting,
         });
+
         this.state = updatedState;
-        this.routePlanner.consumeNode();
-        node = this.routePlanner.peekNode();
       }
     }
 
     if (this.state.stateType === ElevatorStateType.DoorsClosing) {
       if (this.state.isCompleted()) {
         this.state = undefined;
-        this.checkState();
+        this.updateState();
       }
     }
   }
