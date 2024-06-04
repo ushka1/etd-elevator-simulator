@@ -2,6 +2,8 @@ import { Elevator } from './Elevator';
 import { calculateRouteCost } from './routeUtils';
 
 export class RouteNode {
+  id = Math.random();
+
   constructor(
     public floor: number,
     public entering: number = 0,

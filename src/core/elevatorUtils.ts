@@ -3,7 +3,7 @@ import { Building } from './Building';
 import { Elevator } from './Elevator';
 import { getFloorElevation } from './buildingUtils';
 
-const metersPerSecond = 0.25;
+const metersPerSecond = 1;
 const metersPerMilisecond = metersPerSecond / 1000;
 
 const SPEED = metersPerMilisecond;
