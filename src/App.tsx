@@ -6,22 +6,27 @@ import {
 import MainContextProvider from './ui/MainContext';
 import MainPage from './ui/MainPage';
 
-const router = createBrowserRouter([
+const router = createBrowserRouter(
+  [
+    {
+      path: '/',
+      element: (
+        <MainContextProvider>
+          <MainPage />
+        </MainContextProvider>
+      ),
+      children: [
+        {
+          path: '*',
+          loader: async () => redirect('/'),
+        },
+      ],
+    },
+  ],
   {
-    path: '/',
-    element: (
-      <MainContextProvider>
-        <MainPage />
-      </MainContextProvider>
-    ),
-    children: [
-      {
-        path: '*',
-        loader: async () => redirect('/'),
-      },
-    ],
+    basename: import.meta.env.BASE_URL,
   },
-]);
+);
 
 function App() {
   return <RouterProvider router={router} />;
