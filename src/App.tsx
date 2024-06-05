@@ -3,12 +3,17 @@ import {
   createBrowserRouter,
   redirect,
 } from 'react-router-dom';
+import MainContextProvider from './ui/MainContext';
 import MainPage from './ui/MainPage';
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <MainPage />,
+    element: (
+      <MainContextProvider>
+        <MainPage />
+      </MainContextProvider>
+    ),
     children: [
       {
         path: '*',

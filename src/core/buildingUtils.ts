@@ -17,12 +17,12 @@ export function getClosestFloorNumber(
   building: Building,
   elevation: number,
 ): number {
-  if (elevation < 0 || building.maxElevation < elevation) {
-    throw new Error('Invalid elevation.');
-  }
-
-  let closestFloorNumber = Infinity;
-  let closestFloorDistance = Infinity;
+  let closestFloorNumber = building.floorsNumbers[0];
+  let closestFloorDistance = calculateDistanceToFloor(
+    building,
+    elevation,
+    building.floorsNumbers[0],
+  );
 
   building.floorsNumbers.forEach((floorNumber) => {
     const distance = calculateDistanceToFloor(building, elevation, floorNumber);
@@ -55,9 +55,6 @@ export function calculateDistanceToFloor(
   elevation: number,
   finalFloor: number,
 ): number {
-  if (elevation < 0 || building.maxElevation < elevation) {
-    throw new Error('Invalid elevation.');
-  }
   if (finalFloor < building.minFloor || building.maxFloor < finalFloor) {
     throw new Error('Invalid floor number.');
   }

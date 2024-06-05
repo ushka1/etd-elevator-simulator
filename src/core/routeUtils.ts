@@ -150,3 +150,19 @@ export function calculateRouteCost(
     return routeTime + delay;
   }
 }
+
+export function mergeRoute(route: RouteNode[]) {
+  const mergedRoute: RouteNode[] = [];
+
+  for (const node of route) {
+    const lastNode = mergedRoute[mergedRoute.length - 1];
+    if (lastNode && lastNode.floor === node.floor) {
+      lastNode.entering += node.entering;
+      lastNode.exiting += node.exiting;
+    } else {
+      mergedRoute.push(node);
+    }
+  }
+
+  return mergedRoute;
+}

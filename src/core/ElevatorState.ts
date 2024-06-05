@@ -136,7 +136,7 @@ export class PassengerBoardingState extends ElevatorState {
       elevator.config.passengerBoardingTime,
     );
 
-    this.title = 'Boarding passengers';
+    this.title = 'Boarding';
     this.entering = options?.entering ?? 0;
     this.exiting = options?.exiting ?? 0;
   }

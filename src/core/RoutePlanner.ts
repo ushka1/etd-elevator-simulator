@@ -1,5 +1,5 @@
 import { Elevator } from './Elevator';
-import { calculateRouteCost } from './routeUtils';
+import { calculateRouteCost, mergeRoute } from './routeUtils';
 
 export class RouteNode {
   id = Math.random();
@@ -25,7 +25,7 @@ export class RoutePlanner {
   }
 
   updateRoute(route: RouteNode[]) {
-    this.route = route;
+    this.route = mergeRoute(route);
   }
 
   findBestRoute(

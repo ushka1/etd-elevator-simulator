@@ -1,15 +1,28 @@
 import { Elevator } from '@/core/Elevator';
+import { XCircleIcon } from '@heroicons/react/20/solid';
 import { Fragment } from 'react/jsx-runtime';
+import { useMainContext } from './MainContext';
 
 type Props = {
   elevator: Elevator;
   color: string;
 };
 
-export default function ElevatorTile({ color, elevator }: Props) {
+export default function ElevatorTile({ color, elevator }: Readonly<Props>) {
+  const { removeElevator } = useMainContext();
+
   return (
-    <div className='min-w-[200px] shrink-0'>
-      <div className={`p-4 text-white ${color} rounded`}>
+    <div className='min-w-[300px] shrink-0 relative'>
+      <button
+        className='
+          absolute top-0 right-0
+          mr-2 mt-2 text-white
+        '
+        onClick={() => removeElevator(elevator.config.id)}
+      >
+        <XCircleIcon className='size-6' />
+      </button>
+      <div className={`p-4 text-white ${color} rounded shadow`}>
         <h1 className='text-center font-bold tracking-wide'>
           Elevator {elevator.config.id}
         </h1>
@@ -24,7 +37,7 @@ export default function ElevatorTile({ color, elevator }: Props) {
           <ul className='text-left flex-1'>
             <li>{elevator.stateTitle}</li>
             <li>{elevator.floor ?? '-'}</li>
-            <li>{elevator.elevation}</li>
+            <li>{elevator.elevation.toFixed(2)}</li>
             <li>{elevator.passengerCount}</li>
             <li>{elevator.doorsOpened ? 'opened' : 'closed'}</li>
           </ul>
@@ -36,7 +49,7 @@ export default function ElevatorTile({ color, elevator }: Props) {
             <Fragment key={node.id}>
               <div className='h-8 w-2 bg-gray-300'></div>
               <li
-                className={`min-w-[100px] p-4 rounded text-center text-white ${color}`}
+                className={`min-w-[125px] p-4 rounded text-center text-white ${color} shadow`}
               >
                 <h1 className='text-sm text-center font-bold tracking-wide'>
                   Floor {node.floor}
