@@ -93,13 +93,14 @@ export default function Controls() {
   };
 
   return (
-    <div className='sticky bottom-0 flex justify-end'>
+    <div className='sticky bottom-0 flex justify-end pointer-events-none'>
       <div
         className='
         w-min p-4 mr-4 mb-4
         flex flex-col gap-y-4
         bg-black bg-opacity-50
         rounded shadow
+        pointer-events-auto
      '
       >
         <div className='flex gap-x-4 text-sm text-white font-medium tracking-wide'>
