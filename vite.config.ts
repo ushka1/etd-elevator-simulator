@@ -4,6 +4,10 @@ import { defineConfig } from 'vite';
 
 export default defineConfig(() => {
   return {
+    base: '/etd-elevator-simulator/',
+    build: {
+      outDir: 'build',
+    },
     plugins: [react()],
     resolve: {
       alias: {
