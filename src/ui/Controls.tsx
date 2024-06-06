@@ -18,8 +18,8 @@ export default function Controls() {
     addElevator,
   } = useMainContext();
 
-  const [initialFloor, setInitialFloor] = useState(0);
-  const [finalFloor, setFinalFloor] = useState(5);
+  const [initialFloor, setInitialFloor] = useState(system.building.minFloor);
+  const [finalFloor, setFinalFloor] = useState(system.building.maxFloor);
   const [milliseconds, setMilliseconds] = useState(1000);
   const [minFloor, setMinFloor] = useState(system.building.minFloor);
   const [floorHeights, setFloorHeights] = useState(
