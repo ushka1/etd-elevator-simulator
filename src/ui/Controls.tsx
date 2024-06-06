@@ -14,7 +14,7 @@ export default function Controls() {
     multiplier,
     requestRoute,
     addTime,
-    changeFloors,
+    changeBuilding,
     addElevator,
   } = useMainContext();
 
@@ -93,125 +93,118 @@ export default function Controls() {
   };
 
   return (
-    <div className='sticky bottom-0 flex justify-end pointer-events-none'>
-      <div
-        className='
+    <div
+      className='
+        fixed bottom-0 right-0
         w-min p-4 mr-4 mb-4
         flex flex-col gap-y-4
         bg-black bg-opacity-50
         rounded shadow
-        pointer-events-auto
      '
-      >
-        <div className='flex gap-x-4 text-sm text-white font-medium tracking-wide'>
-          <p>Building {'{'}</p>
-          <p>minFloor: {system.building.minFloor}</p>
-          <p>floorsHeights: {system.building.floorsHeights.join(',')}</p>
-          <p>{'}'}</p>
-        </div>
-        <div className='flex gap-x-4 items-end'>
-          <Input
-            inputProps={{
-              id: 'initial-floor',
-              value: initialFloor,
-              type: 'number',
-              onChange: initialFloorHandler,
-            }}
-            label='Initial floor'
-          />
-          <Input
-            inputProps={{
-              id: 'final-floor',
-              value: finalFloor,
-              type: 'number',
-              onChange: finalFloorHandler,
-            }}
-            label='Final floor'
-          />
-          <Button onClick={() => requestRoute(initialFloor, finalFloor)}>
-            Request route
-          </Button>
-        </div>
-        <div className='flex gap-x-4 items-end'>
-          <Input
-            inputProps={{
-              id: 'milliseconds',
-              value: milliseconds,
-              type: 'number',
-              onChange: millisecondsHandler,
-            }}
-            label='Milliseconds'
-          />
-          <Button onClick={() => addTime(milliseconds)}>Add time</Button>
-        </div>
-        <div className='flex gap-x-4 items-end'>
-          <Input
-            inputProps={{
-              id: 'min-floor',
-              value: minFloor,
-              type: 'number',
-              onChange: minFloorHandler,
-            }}
-            className='w-[100px]'
-            label='Min Floor'
-          />
-          <Input
-            inputProps={{
-              id: 'floor-heights',
-              value: floorHeights.toString(),
-              onChange: (e) => {
-                setFloorHeights(e.target.value);
-              },
-              onBlur: floorHeightsHandler,
-            }}
-            label='Floor heights'
-          />
-          <Button
-            onClick={() => {
-              const formatted = floorHeights.split(',').map(Number);
-              changeFloors(minFloor, formatted);
-            }}
-          >
-            Update floors
-          </Button>
-        </div>
-        <div className='flex gap-x-4 items-end'>
-          <Input
-            inputProps={{
-              id: 'elevator',
-              value: baseFloor,
-              type: 'number',
-              onChange: baseFloorHandler,
-            }}
-            label='Base floor'
-          />
-          <Button
-            onClick={() => {
-              addElevator(baseFloor);
-            }}
-          >
-            Add elevator
-          </Button>
-        </div>
-        <div className='flex gap-x-4 justify-center mt-4'>
-          <IconButton className='bg-blue-500' onClick={() => cycleMultiplier()}>
-            {multiplier}X
-          </IconButton>
-          <IconButton
-            className='bg-green-500'
-            disabled={playing}
-            onClick={() => setPlaying(true)}
-          >
-            <PlayIcon className='size-6' />
-          </IconButton>
-          <IconButton
-            className='bg-red-500'
-            disabled={!playing}
-            onClick={() => setPlaying(false)}
-          >
-            <PauseIcon className='size-6' />
-          </IconButton>
-        </div>
+    >
+      <div className='flex gap-x-4 items-end'>
+        <Input
+          inputProps={{
+            id: 'initial-floor',
+            type: 'number',
+            value: initialFloor,
+            onChange: initialFloorHandler,
+          }}
+          label='Initial floor'
+        />
+        <Input
+          inputProps={{
+            id: 'final-floor',
+            type: 'number',
+            value: finalFloor,
+            onChange: finalFloorHandler,
+          }}
+          label='Final floor'
+        />
+        <Button onClick={() => requestRoute(initialFloor, finalFloor)}>
+          Request route
+        </Button>
+      </div>
+      <div className='flex gap-x-4 items-end'>
+        <Input
+          inputProps={{
+            id: 'milliseconds',
+            type: 'number',
+            value: milliseconds,
+            onChange: millisecondsHandler,
+          }}
+          label='Milliseconds'
+        />
+        <Button onClick={() => addTime(milliseconds)} disabled={playing}>
+          Add time
+        </Button>
+      </div>
+      <div className='flex gap-x-4 items-end'>
+        <Input
+          inputProps={{
+            id: 'min-floor',
+            type: 'number',
+            value: minFloor,
+            onChange: minFloorHandler,
+          }}
+          label='Min Floor'
+        />
+        <Input
+          inputProps={{
+            id: 'floor-heights',
+            value: floorHeights.toString(),
+            onChange: (e) => {
+              setFloorHeights(e.target.value);
+            },
+            onBlur: floorHeightsHandler,
+          }}
+          label='Floor heights'
+        />
+        <Button
+          onClick={() => {
+            const formatted = floorHeights.split(',').map(Number);
+            changeBuilding(minFloor, formatted);
+          }}
+        >
+          Change building
+        </Button>
+      </div>
+      <div className='flex gap-x-4 items-end'>
+        <Input
+          inputProps={{
+            id: 'elevator',
+            type: 'number',
+            value: baseFloor,
+            onChange: baseFloorHandler,
+          }}
+          label='Base floor'
+        />
+        <Button
+          onClick={() => {
+            addElevator(baseFloor);
+          }}
+        >
+          Add elevator
+        </Button>
+      </div>
+      <div className='flex gap-x-4 justify-center mt-4'>
+        <IconButton className='bg-blue-500' onClick={() => cycleMultiplier()}>
+          {multiplier}X
+        </IconButton>
+        <IconButton
+          className='bg-green-500'
+          disabled={playing}
+          onClick={() => setPlaying(true)}
+        >
+          <PlayIcon className='size-6' />
+        </IconButton>
+        <IconButton
+          className='bg-red-500'
+          disabled={!playing}
+          onClick={() => setPlaying(false)}
+        >
+          <PauseIcon className='size-6' />
+        </IconButton>
       </div>
     </div>
   );

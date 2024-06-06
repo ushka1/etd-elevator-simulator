@@ -1,4 +1,5 @@
 import { PlusCircleIcon } from '@heroicons/react/20/solid';
+import Building from './Building';
 import Controls from './Controls';
 import ElevatorTile from './ElevatorTile';
 import { useMainContext } from './MainContext';
@@ -11,6 +12,7 @@ export default function MainPage() {
     <>
       <div className='w-full min-h-dvh overflow-x-auto'>
         <div className='w-full p-4 flex gap-x-4'>
+          <Building />
           {system.elevators.map((elevator) => (
             <ElevatorTile
               key={elevator.config.id}
@@ -27,6 +29,7 @@ export default function MainPage() {
             </button>
           </div>
         </div>
+        <div className='h-[408px]'>{/* CONTROLS HEIGHT PLACEHOLDER */}</div>
       </div>
       <Controls />
     </>

@@ -12,11 +12,14 @@ export default function Button({
     <button
       className={clsx(
         `
-      bg-teal-500 h-[40px] min-w-[150px]
-      text-xs tracking-wide font-bold text-white text-nowrap
-      rounded uppercase shadow
+          bg-teal-500 h-[40px] min-w-[150px]
+          text-xs tracking-wide font-bold text-white text-nowrap
+          rounded uppercase shadow
         `,
         className,
+        {
+          'shadow-none opacity-50': props.disabled,
+        },
       )}
       {...props}
     >

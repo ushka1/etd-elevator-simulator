@@ -3,14 +3,14 @@ import React from 'react';
 
 type Props = {
   inputProps: React.InputHTMLAttributes<HTMLInputElement>;
-  label: string;
   className?: string;
+  label: string;
 };
 
 export default function Input({
   inputProps,
-  label,
   className,
+  label,
 }: Readonly<Props>) {
   return (
     <div className={clsx('flex flex-col w-full', className)}>

@@ -16,24 +16,25 @@ import {
   resetElevatorIdCounter,
 } from './utils';
 
+const defaultSystem = getDefaultSystem();
+
 interface MainContextProps {
-  system: ElevatorSystem;
-  playing: boolean;
   multiplier: number;
+  playing: boolean;
+  system: ElevatorSystem;
   update: boolean;
-  setPlaying: (playing: boolean) => void;
-  setMultiplier: (multiplier: number) => void;
-  requestRoute: (initialFloor: number, finalFloor: number) => void;
-  changeFloors: (minFloor: number, floorsHeights: number[]) => void;
+  addElevator: (baseFloor?: number) => void;
   addTime: (time: number) => void;
+  changeBuilding: (minFloor: number, floorsHeights: number[]) => void;
   cycleMultiplier: () => void;
   forceUpdate: () => void;
-  addElevator: (baseFloor?: number) => void;
   removeElevator: (elevatorId: string) => void;
+  requestRoute: (initialFloor: number, finalFloor: number) => void;
+  setMultiplier: (multiplier: number) => void;
+  setPlaying: (playing: boolean) => void;
 }
 
 const MainContext = createContext<MainContextProps | undefined>(undefined);
-const defaultSystem = getDefaultSystem();
 
 export default function MainContextProvider({
   children,
@@ -42,10 +43,6 @@ export default function MainContextProvider({
   const [playing, setPlaying] = useState(false);
   const [multiplier, setMultiplier] = useState(1);
   const [update, forceUpdate] = useReducer((x) => !x, false);
-
-  const removeElevator = (elevatorId: string) => {
-    system.removeElevator(elevatorId);
-  };
 
   const addElevator = (baseFloor: number = 0) => {
     if (baseFloor > system.building.maxFloor) {
@@ -61,11 +58,15 @@ export default function MainContextProvider({
     });
   };
 
+  const removeElevator = (elevatorId: string) => {
+    system.removeElevator(elevatorId);
+  };
+
   const requestRoute = (initialFloor: number, finalFloor: number) => {
     system.requestRoute(initialFloor, finalFloor);
   };
 
-  const changeFloors = (minFloor: number, floorsHeights: number[]) => {
+  const changeBuilding = (minFloor: number, floorsHeights: number[]) => {
     const newBuilding = new Building(minFloor, floorsHeights);
     const newSystem = new ElevatorSystem(newBuilding);
     resetElevatorIdCounter();
@@ -110,25 +111,25 @@ export default function MainContextProvider({
         clearInterval(interval);
       }
     };
-  }, [playing, system, multiplier]);
+  }, [multiplier, playing, system]);
 
   const contextValue = useMemo(() => {
     return {
-      system,
-      playing,
       multiplier,
+      playing,
+      system,
       update,
-      setPlaying,
-      setMultiplier,
-      requestRoute,
-      changeFloors,
+      addElevator,
       addTime,
+      changeBuilding,
       cycleMultiplier,
       forceUpdate,
-      addElevator,
       removeElevator,
+      requestRoute,
+      setMultiplier,
+      setPlaying,
     };
-  }, [system, playing, multiplier, update]);
+  }, [multiplier, playing, system, update]);
 
   return (
     <MainContext.Provider value={contextValue}>{children}</MainContext.Provider>
