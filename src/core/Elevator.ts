@@ -5,9 +5,10 @@ import {
   ElevatorMovingState,
   ElevatorState,
   ElevatorStateType,
+  IdleState,
   PassengerBoardingState,
 } from './ElevatorState';
-import { RoutePlanner } from './RoutePlanner';
+import { RouteNode, RoutePlanner } from './RoutePlanner';
 import {
   getClosestFloorNumber,
   getFloorElevation,
@@ -25,7 +26,8 @@ export class Elevator {
   doorsOpened = false;
   passengerCount = 0;
 
-  state?: ElevatorState;
+  state: ElevatorState = new IdleState(this);
+  processedNode?: RouteNode;
 
   constructor(building: Building, config: ElevatorConfig) {
     this.config = sanitizeElevatorConfig(building, config);
@@ -53,100 +55,116 @@ export class Elevator {
 
   addTime(time: number) {
     let excessTime = time;
-    this.updateState();
 
-    while (this.state && excessTime > 0) {
+    let prevState = this.state;
+    while (excessTime > 0) {
+      const nextState = this.getNextState();
+      if (
+        prevState.stateType === ElevatorStateType.Idle &&
+        nextState.stateType === ElevatorStateType.Idle
+      ) {
+        break;
+      }
+
+      this.state = nextState;
+      prevState = nextState;
+
       excessTime = this.state.addTime(time);
-      this.updateState();
     }
 
     return excessTime;
   }
 
-  updateState() {
-    if (!this.state) {
-      // Idle state.
-      const node = this.routePlanner.peekNode();
+  private getNextState(): ElevatorState {
+    const stateType = this.state.stateType;
+    const routePlanner = this.routePlanner;
+
+    if (stateType === ElevatorStateType.Idle) {
+      const node = routePlanner.peekNode();
       if (!node) {
-        return;
+        // No more nodes to service, stay idle.
+        return this.state;
       }
 
       if (this.floor !== node.floor) {
-        // Not at correct floor.
-        this.state = new ElevatorMovingState(this, node.floor);
+        // Elevator is not at destination floor, start moving.
+        return new ElevatorMovingState(this, node.floor);
       } else {
-        // At correct floor.
-        this.state = new DoorsOpeningState(this, {
-          entering: node.entering,
-          exiting: node.exiting,
-        });
-        this.routePlanner.consumeNode();
+        // Arrived at destination floor, open doors.
+        routePlanner.consumeNode();
+        return new DoorsOpeningState(this, node);
       }
-
-      return;
     }
 
-    if (this.state.stateType === ElevatorStateType.ElevatorMoving) {
+    if (stateType === ElevatorStateType.ElevatorMoving) {
+      if (this.state.isCompleted()) {
+        // Arrived at destination floor, change to idle.
+        return new IdleState(this);
+      }
+
+      const node = routePlanner.peekNode();
       const state = this.state as ElevatorMovingState;
-      if (state.isCompleted()) {
-        this.state = undefined;
-        this.updateState();
-        return;
+      if (node && node.floor !== state.finalFloor) {
+        // Destination floor changed, change destination.
+        return new ElevatorMovingState(this, node.floor);
       }
 
-      const node = this.routePlanner.peekNode();
-      if (!node) {
-        return;
-      }
-
-      if (state.finalFloor !== node.floor) {
-        // Destination floor changed, re-calculate moving state.
-        this.state = new ElevatorMovingState(this, node.floor);
-      }
-
-      return;
+      // Destination floor unchanged, keep moving.
+      return this.state;
     }
 
-    if (this.state.stateType === ElevatorStateType.DoorsOpening) {
+    if (stateType === ElevatorStateType.DoorsOpening) {
       const state = this.state as DoorsOpeningState;
       if (state.isCompleted()) {
-        this.state = new PassengerBoardingState(this, {
-          entering: state.entering,
-          exiting: state.exiting,
-        });
+        // Doors opened, start boarding passengers.
+        return new PassengerBoardingState(this);
       }
 
-      return;
+      // Still opening doors.
+      return this.state;
     }
 
-    if (this.state.stateType === ElevatorStateType.PassengerBoarding) {
+    if (stateType === ElevatorStateType.PassengerBoarding) {
       if (this.state.isCompleted()) {
-        this.state = new DoorClosingState(this);
-        return;
+        // Boarding completed, close doors.
+        return new DoorClosingState(this);
       }
 
-      while (
-        this.routePlanner.peekNode() &&
-        this.routePlanner.peekNode()!.floor === this.floor
-      ) {
-        // Additional passengers are serviced.
-        const node = this.routePlanner.consumeNode()!;
-
-        const currentState = this.state as PassengerBoardingState;
-        const updatedState = new PassengerBoardingState(this, {
-          entering: currentState.entering + node.entering,
-          exiting: currentState.exiting + node.exiting,
-        });
-
-        this.state = updatedState;
+      const node = routePlanner.peekNode();
+      let additionalEntering = 0;
+      let additionalExiting = 0;
+      if (node && node.floor === this.floor) {
+        // Check for additional passengers on the same floor.
+        routePlanner.consumeNode();
+        additionalEntering += node.entering ?? 0;
+        additionalExiting += node.exiting ?? 0;
       }
+
+      if (additionalEntering || additionalExiting) {
+        // Additional passengers found, update state.
+        const processedNode = this.processedNode!;
+        const updatedNode = new RouteNode(
+          processedNode.floor,
+          processedNode.entering + additionalEntering,
+          processedNode.exiting + additionalExiting,
+        );
+        return new PassengerBoardingState(this, updatedNode);
+      }
+
+      // Still boarding passengers.
+      return this.state;
     }
 
-    if (this.state.stateType === ElevatorStateType.DoorsClosing) {
+    if (stateType === ElevatorStateType.DoorsClosing) {
       if (this.state.isCompleted()) {
-        this.state = undefined;
-        this.updateState();
+        // Doors closed, change to idle.
+        return new IdleState(this);
       }
+
+      // Still closing doors.
+      return this.state;
     }
+
+    throw new Error('Unknown elevator state');
   }
 }

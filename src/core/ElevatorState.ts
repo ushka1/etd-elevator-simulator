@@ -1,8 +1,10 @@
 import { Elevator } from './Elevator';
+import { RouteNode } from './RoutePlanner';
 import { determineElevatorMovingDirection } from './elevatorUtils';
 import { calculateElevatorToFloorTime } from './timeUtils';
 
 export enum ElevatorStateType {
+  Idle = 'IDLE',
   ElevatorMoving = 'ELEVATOR_MOVING',
   DoorsOpening = 'DOORS_OPENING',
   PassengerBoarding = 'PASSENGER_BOARDING',
@@ -24,7 +26,7 @@ export abstract class ElevatorState {
   protected onCompleteAction?(): void;
 
   addTime(time: number): number {
-    if (this.isCompleted()) {
+    if (time <= 0 || this.isCompleted()) {
       return time;
     }
 
@@ -62,6 +64,12 @@ export abstract class ElevatorState {
   }
 }
 
+export class IdleState extends ElevatorState {
+  constructor(elevator: Elevator) {
+    super(elevator, ElevatorStateType.Idle, 0);
+  }
+}
+
 export class ElevatorMovingState extends ElevatorState {
   direction: number;
   finalFloor: number;
@@ -94,16 +102,10 @@ export class ElevatorMovingState extends ElevatorState {
   }
 }
 
-type DoorsOpeningStateOptions = {
-  entering?: number;
-  exiting?: number;
-};
-
 export class DoorsOpeningState extends ElevatorState {
-  entering: number;
-  exiting: number;
+  private consumedNode: RouteNode;
 
-  constructor(elevator: Elevator, options: DoorsOpeningStateOptions) {
+  constructor(elevator: Elevator, consumedNode: RouteNode) {
     super(
       elevator,
       ElevatorStateType.DoorsOpening,
@@ -111,8 +113,11 @@ export class DoorsOpeningState extends ElevatorState {
     );
 
     this.title = 'Opening doors';
-    this.entering = options?.entering ?? 0;
-    this.exiting = options?.exiting ?? 0;
+    this.consumedNode = consumedNode;
+  }
+
+  protected override onStartAction(): void {
+    this.elevator.processedNode = this.consumedNode;
   }
 
   protected override onCompleteAction(): void {
@@ -120,16 +125,10 @@ export class DoorsOpeningState extends ElevatorState {
   }
 }
 
-type PassengerBoardingStateOptions = {
-  entering?: number;
-  exiting?: number;
-};
-
 export class PassengerBoardingState extends ElevatorState {
-  entering: number;
-  exiting: number;
+  private updatedNode?: RouteNode;
 
-  constructor(elevator: Elevator, options?: PassengerBoardingStateOptions) {
+  constructor(elevator: Elevator, updatedNode?: RouteNode) {
     super(
       elevator,
       ElevatorStateType.PassengerBoarding,
@@ -137,12 +136,20 @@ export class PassengerBoardingState extends ElevatorState {
     );
 
     this.title = 'Boarding';
-    this.entering = options?.entering ?? 0;
-    this.exiting = options?.exiting ?? 0;
+    this.updatedNode = updatedNode;
+  }
+
+  protected override onStartAction(): void {
+    if (this.updatedNode) {
+      this.elevator.processedNode = this.updatedNode;
+    }
   }
 
   protected override onCompleteAction(): void {
-    this.elevator.passengerCount += this.entering - this.exiting;
+    const entering = this.elevator.processedNode?.entering ?? 0;
+    const exiting = this.elevator.processedNode?.exiting ?? 0;
+
+    this.elevator.passengerCount += entering - exiting;
   }
 }
 
@@ -157,6 +164,7 @@ export class DoorClosingState extends ElevatorState {
   }
 
   protected override onCompleteAction(): void {
+    this.elevator.processedNode = undefined;
     this.elevator.doorsOpened = false;
   }
 }
