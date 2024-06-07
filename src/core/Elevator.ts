@@ -72,6 +72,7 @@ export class Elevator {
       excessTime = this.state.addTime(time);
     }
 
+    this.state = this.getNextState();
     return excessTime;
   }
 

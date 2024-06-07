@@ -12,16 +12,27 @@ export function getNextMultiplier(currentMultiplier: number) {
 }
 
 const COLORS = [
-  'bg-red-500',
-  'bg-orange-500',
-  'bg-yellow-500',
-  'bg-green-500',
-  'bg-teal-500',
-  'bg-sky-500',
-  'bg-indigo-500',
-  'bg-purple-500',
-  'bg-pink-500',
+  'red-500',
+  'orange-500',
+  'yellow-500',
+  'green-500',
+  'teal-500',
+  'sky-500',
+  'indigo-500',
+  'purple-500',
+  'pink-500',
 ];
+
+/* ========================= TAILWIND POSTCSS ========================= */
+// bg-red-500 outline-red-500
+// bg-orange-500 outline-orange-500
+// bg-yellow-500 outline-yellow-500
+// bg-green-500 outline-green-500
+// bg-teal-500 outline-teal-500
+// bg-sky-500 outline-sky-500
+// bg-indigo-500 outline-indigo-500
+// bg-purple-500 outline-purple-500
+// bg-pink-500 outline-pink-500
 
 export function getElevatorColor(elevatorId: string) {
   const index = elevatorId.charCodeAt(0) - 65;

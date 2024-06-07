@@ -23,7 +23,7 @@ export default function Building() {
           className='w-[80px] h-[80px] bg-gray-300 mb-4 rounded flex flex-col items-center justify-center'
         >
           <p className='text-xs font-bold'>Floor {elm[0]}</p>
-          <p className='text-xs'>Height: {elm[1]}</p>
+          <p className='text-xs mt-1'>Height: {elm[1]}</p>
         </li>
       ))}
     </ul>

@@ -22,7 +22,7 @@ export default function ElevatorTile({ color, elevator }: Readonly<Props>) {
       >
         <XCircleIcon className='size-6' />
       </button>
-      <div className={`p-4 text-white ${color} rounded shadow`}>
+      <div className={`p-4 text-white bg-${color} rounded shadow`}>
         <h1 className='text-center font-bold tracking-wide'>
           Elevator {elevator.config.id}
         </h1>
@@ -44,12 +44,43 @@ export default function ElevatorTile({ color, elevator }: Readonly<Props>) {
         </div>
       </div>
       <ul className='flex flex-col items-center'>
+        {elevator.processedNode && (
+          <>
+            <div className='h-8 w-2 bg-gray-300 -z-10'></div>
+            <li
+              className={`
+                min-w-[125px] p-4
+                text-center text-white bg-${color}
+                rounded shadow
+                outline outline-4 outline-offset-4 outline-${color}
+              `}
+            >
+              <h1 className='text-sm text-center font-bold tracking-wide'>
+                Floor {elevator.processedNode.floor}
+              </h1>
+              <div className='mt-1 flex justify-center gap-x-2 text-xs text-nowrap'>
+                <ul className='text-right flex-1'>
+                  <li>Enter:</li>
+                  <li>Exit:</li>
+                </ul>
+                <ul className='text-left flex-1'>
+                  <li>{elevator.processedNode.entering}</li>
+                  <li>{elevator.processedNode.exiting}</li>
+                </ul>
+              </div>
+            </li>
+          </>
+        )}
         {elevator.routePlanner.route.map((node) => {
           return (
             <Fragment key={node.id}>
-              <div className='h-8 w-2 bg-gray-300'></div>
+              <div className='h-8 w-2 bg-gray-300 -z-10'></div>
               <li
-                className={`min-w-[125px] p-4 rounded text-center text-white ${color} shadow`}
+                className={`
+                  min-w-[125px] p-4
+                  text-center text-white bg-${color}
+                  rounded shadow
+                `}
               >
                 <h1 className='text-sm text-center font-bold tracking-wide'>
                   Floor {node.floor}
