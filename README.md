@@ -1,5 +1,9 @@
 # ETD Elevator Simulator
 
+## Preview
+
+[Simulator can be previewed online here.](https://ushka1.github.io/etd-elevator-simulator/)
+
 ## Description
 
 Time dependent elevator simulator using the ETD (Estimated Time to Destination) algorithm with destination dispatch in full configuration.
