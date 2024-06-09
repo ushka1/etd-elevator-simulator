@@ -1,5 +1,5 @@
 import { PauseIcon, PlayIcon } from '@heroicons/react/20/solid';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Button from './Button';
 import IconButton from './IconButton';
 import Input from './Input';
@@ -91,6 +91,14 @@ export default function Controls() {
       setBaseFloor(floor);
     }
   };
+
+  useEffect(() => {
+    setInitialFloor(system.building.minFloor);
+    setFinalFloor(system.building.maxFloor);
+    setMinFloor(system.building.minFloor);
+    setFloorHeights(system.building.floorsHeights.toString());
+    setBaseFloor(system.building.minFloor);
+  }, [system]);
 
   return (
     <div
