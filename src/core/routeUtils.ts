@@ -11,21 +11,23 @@ export function calculateRouteCost(
   idx1: number,
   idx2: number,
 ): number {
-  let routeTime = 0; // Total route time of inserted passenger.
-  let delayedPassengers1 = 0; // Number of passengers delayed by the first insertion.
-  let delayedPassengers2 = 0; // Number of passengers delayed by the second insertion.
+  let newPassengerRouteTime = 0;
+  let firstInsertionDelayTime = 0;
+  let bothInsertionsDelayTime = 0;
+  let firstInsertionDelayedPassengers = 0;
+  let bothInsertionsDelayedPassengers = 0;
 
   for (let i = 0; i < route.length; i++) {
     const prev = i > 0 ? route[i - 1] : null;
     const curr = route[i];
 
     if (i === 0) {
-      routeTime += calculateElevatorToFloorWithServiceTime(
+      newPassengerRouteTime += calculateElevatorToFloorWithServiceTime(
         elevator,
         curr.floor,
       );
     } else if (i <= idx2) {
-      routeTime += calculateFloorToFloorWithServiceTime(
+      newPassengerRouteTime += calculateFloorToFloorWithServiceTime(
         elevator,
         prev!.floor,
         curr.floor,
@@ -33,11 +35,10 @@ export function calculateRouteCost(
     }
 
     if (idx1 < i && i < idx2) {
-      delayedPassengers1 += curr.exiting;
+      firstInsertionDelayedPassengers += curr.exiting;
     }
     if (idx2 < i) {
-      delayedPassengers1 += curr.exiting;
-      delayedPassengers2 += curr.exiting;
+      bothInsertionsDelayedPassengers += curr.exiting;
     }
   }
 
@@ -86,8 +87,7 @@ export function calculateRouteCost(
       );
     }
 
-    const delay = (d1 + d2 + d3 - o1) * delayedPassengers1;
-    return routeTime + delay;
+    bothInsertionsDelayTime = d1 + d2 + d3 - o1;
   } else {
     const node1 = idx1 > 0 ? route[idx1 - 1] : null;
     const node2 = route[idx1];
@@ -144,11 +144,15 @@ export function calculateRouteCost(
       );
     }
 
-    const delay1 = (d1 + d2 - o1) * delayedPassengers1;
-    const delay2 = (d3 + d4 - o2) * delayedPassengers2;
-    const delay = delay1 + delay2;
-    return routeTime + delay;
+    firstInsertionDelayTime = d1 + d2 - o1;
+    bothInsertionsDelayTime = d1 + d2 + d3 + d4 - o1 - o2;
   }
+
+  return (
+    newPassengerRouteTime +
+    firstInsertionDelayTime * firstInsertionDelayedPassengers +
+    bothInsertionsDelayTime * bothInsertionsDelayedPassengers
+  );
 }
 
 export function mergeRoute(route: RouteNode[]) {
