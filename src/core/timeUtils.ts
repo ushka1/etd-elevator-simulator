@@ -1,4 +1,4 @@
-import { Elevator } from './Elevator';
+import { ElevatorInfo } from './Elevator';
 import { ElevatorStateType } from './ElevatorState';
 import {
   calculateDistanceBetweenFloors,
@@ -6,7 +6,7 @@ import {
 } from './buildingUtils';
 
 export function calculateElevatorToFloorTime(
-  elevator: Elevator,
+  elevator: ElevatorInfo,
   floor: number,
 ) {
   const distance = calculateDistanceToFloor(
@@ -21,7 +21,7 @@ export function calculateElevatorToFloorTime(
 }
 
 export function calculateFloorToFloorTime(
-  elevator: Elevator,
+  elevator: ElevatorInfo,
   initialFloor: number,
   finalFloor: number,
 ) {
@@ -34,7 +34,7 @@ export function calculateFloorToFloorTime(
   return distance / speed;
 }
 
-export function calculateFloorServiceTime(elevator: Elevator) {
+export function calculateFloorServiceTime(elevator: ElevatorInfo) {
   return (
     elevator.config.doorsOpeningTime +
     elevator.config.passengerBoardingTime +
@@ -42,39 +42,39 @@ export function calculateFloorServiceTime(elevator: Elevator) {
   );
 }
 
-export function calculateFinishBoardingTime(elevator: Elevator) {
+export function calculateFinishBoardingTime(elevator: ElevatorInfo) {
   const state = elevator.state;
-  const stateType = state?.stateType;
+  const stateType = state.stateType;
 
   switch (stateType) {
     case ElevatorStateType.DoorsOpening:
       return (
-        state!.getRemainingTime() +
+        state.getRemainingTime() +
         elevator.config.passengerBoardingTime +
         elevator.config.doorsClosingTime
       );
 
     case ElevatorStateType.PassengerBoarding:
-      return state!.getRemainingTime() + elevator.config.doorsClosingTime;
+      return state.getRemainingTime() + elevator.config.doorsClosingTime;
 
     case ElevatorStateType.DoorsClosing:
-      return state!.getRemainingTime();
+      return state.getRemainingTime();
 
     default:
       return 0;
   }
 }
 
-export function calculateAdditionalBoardingTime(elevator: Elevator) {
+export function calculateAdditionalBoardingTime(elevator: ElevatorInfo) {
   const state = elevator.state;
-  const stateType = state?.stateType;
+  const stateType = state.stateType;
 
   switch (stateType) {
     case ElevatorStateType.DoorsOpening:
       return 0;
 
     case ElevatorStateType.PassengerBoarding:
-      return elevator.config.passengerBoardingTime - state!.getRemainingTime();
+      return elevator.config.passengerBoardingTime - state.getRemainingTime();
 
     case ElevatorStateType.DoorsClosing:
       return (
@@ -89,7 +89,7 @@ export function calculateAdditionalBoardingTime(elevator: Elevator) {
 }
 
 export function calculateFloorToFloorWithServiceTime(
-  elevator: Elevator,
+  elevator: ElevatorInfo,
   initialFloor: number,
   finalFloor: number,
 ) {
@@ -102,7 +102,7 @@ export function calculateFloorToFloorWithServiceTime(
 }
 
 export function calculateElevatorToFloorWithServiceTime(
-  elevator: Elevator,
+  elevator: ElevatorInfo,
   floor: number,
 ) {
   if (elevator.floor === floor) {

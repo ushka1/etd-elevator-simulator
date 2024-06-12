@@ -1,4 +1,4 @@
-import { Elevator } from './Elevator';
+import { ElevatorInfo } from './Elevator';
 import { calculateRouteCost, mergeRoute } from './routeUtils';
 
 export class RouteNode {
@@ -14,7 +14,7 @@ export class RouteNode {
 export class RoutePlanner {
   route: RouteNode[] = [];
 
-  constructor(public elevator: Elevator) {}
+  constructor(public elevator: ElevatorInfo) {}
 
   peekNode(): RouteNode | undefined {
     return this.route[0];

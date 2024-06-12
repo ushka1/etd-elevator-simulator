@@ -1,6 +1,6 @@
 import * as yup from 'yup';
 import { Building } from './Building';
-import { Elevator } from './Elevator';
+import { ElevatorInfo } from './Elevator';
 import { getFloorElevation } from './buildingUtils';
 
 const metersPerSecond = 0.5;
@@ -11,7 +11,20 @@ const DOORS_OPENING_TIME = 2000;
 const PASSENGER_BOARDING_TIME = 6000;
 const DOORS_CLOSING_TIME = 2000;
 
-const elevatorConfigSchema = (building: Building) =>
+export type ElevatorConfig = {
+  id: string;
+
+  speed?: number;
+  baseFloor?: number;
+
+  doorsOpeningTime?: number;
+  passengerBoardingTime?: number;
+  doorsClosingTime?: number;
+};
+
+const elevatorConfigSchema = (
+  building: Building,
+): yup.ObjectSchema<Required<ElevatorConfig>> =>
   yup.object({
     id: yup.string().required(),
     speed: yup
@@ -43,16 +56,6 @@ const elevatorConfigSchema = (building: Building) =>
       .default(DOORS_CLOSING_TIME),
   });
 
-export type ElevatorConfig = {
-  id: string;
-  speed?: number;
-  baseFloor?: number;
-
-  doorsOpeningTime?: number;
-  passengerBoardingTime?: number;
-  doorsClosingTime?: number;
-};
-
 export function sanitizeElevatorConfig(
   building: Building,
   config: ElevatorConfig,
@@ -64,8 +67,10 @@ export function sanitizeElevatorConfig(
       stripUnknown: true,
     });
     return sanitizedConfig;
-  } catch (error: any) {
-    console.error('Elevator config validation errors:', error?.errors);
+  } catch (error) {
+    if (error instanceof yup.ValidationError) {
+      console.error('Elevator config validation errors:', error?.errors);
+    }
     throw error;
   }
 }
@@ -74,7 +79,7 @@ export function sanitizeElevatorConfig(
  * @returns The direction the elevator should move to reach the target floor.
  */
 export function determineElevatorMovingDirection(
-  elevator: Elevator,
+  elevator: ElevatorInfo,
   finalFloor: number,
 ): number {
   const finalElevation = getFloorElevation(elevator.building, finalFloor);

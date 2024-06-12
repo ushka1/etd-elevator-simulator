@@ -1,4 +1,4 @@
-import { Elevator } from './Elevator';
+import { ElevatorInfo } from './Elevator';
 import { RouteNode } from './RoutePlanner';
 import {
   calculateElevatorToFloorWithServiceTime,
@@ -6,7 +6,7 @@ import {
 } from './timeUtils';
 
 export function calculateRouteCost(
-  elevator: Elevator,
+  elevator: ElevatorInfo,
   route: RouteNode[],
   idx1: number,
   idx2: number,

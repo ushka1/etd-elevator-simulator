@@ -4,6 +4,7 @@ import {
   DoorsOpeningState,
   ElevatorMovingState,
   ElevatorState,
+  ElevatorStateInfo,
   ElevatorStateType,
   IdleState,
   PassengerBoardingState,
@@ -16,7 +17,15 @@ import {
 } from './buildingUtils';
 import { ElevatorConfig, sanitizeElevatorConfig } from './elevatorUtils';
 
-export class Elevator {
+export interface ElevatorInfo {
+  readonly state: Readonly<ElevatorStateInfo>;
+  readonly config: Readonly<Required<ElevatorConfig>>;
+  readonly building: Readonly<Building>;
+  readonly floor?: number;
+  readonly elevation: number;
+}
+
+export class Elevator implements ElevatorInfo {
   config: Required<ElevatorConfig>;
   building: Building;
   routePlanner: RoutePlanner;
@@ -37,7 +46,7 @@ export class Elevator {
   }
 
   get stateTitle() {
-    return this.state?.title ?? 'Idle';
+    return this.state.title;
   }
 
   get floor() {

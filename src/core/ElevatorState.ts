@@ -11,8 +11,16 @@ export enum ElevatorStateType {
   DoorsClosing = 'DOORS_CLOSING',
 }
 
-export abstract class ElevatorState {
-  title?: string;
+export interface ElevatorStateInfo {
+  readonly title: string;
+  readonly stateType: ElevatorStateType;
+  readonly duration: number;
+  readonly getRemainingTime: () => number;
+  readonly isCompleted: () => boolean;
+}
+
+export abstract class ElevatorState implements ElevatorStateInfo {
+  title: string = '';
   private elapsedTime = 0;
 
   constructor(

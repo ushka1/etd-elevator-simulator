@@ -24,7 +24,8 @@
     "paths": {
       "@/*": ["src/*"]
     },
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    "pretty": true
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
