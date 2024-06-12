@@ -6,7 +6,7 @@
 
 ## Description
 
-Time dependent elevator simulator using the ETD (Estimated Time to Destination) algorithm with destination dispatch in full configuration.
+Time dependent elevator system simulator using the ETD (Estimated Time to Destination) algorithm with destination dispatch in full configuration.
 
 ![application screenshot](./docs/screenshot.png)
 
@@ -22,6 +22,10 @@ Time dependent elevator simulator using the ETD (Estimated Time to Destination) 
 1. Run `npm run dev` to start the development server.
 
 ## Docs (WIP)
+
+### Classes diagram
+
+![classes diagram](./docs/etd-elevator-system-classes.jpg)
 
 ### Elevator state machine
 

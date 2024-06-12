@@ -58,7 +58,7 @@ export class Elevator {
 
     let prevState = this.state;
     while (excessTime > 0) {
-      const nextState = this.getNextState();
+      const nextState = this.determineState();
       if (
         prevState.stateType === ElevatorStateType.Idle &&
         nextState.stateType === ElevatorStateType.Idle
@@ -72,11 +72,11 @@ export class Elevator {
       excessTime = this.state.addTime(time);
     }
 
-    this.state = this.getNextState();
+    this.state = this.determineState();
     return excessTime;
   }
 
-  private getNextState(): ElevatorState {
+  private determineState(): ElevatorState {
     const stateType = this.state.stateType;
     const routePlanner = this.routePlanner;
 

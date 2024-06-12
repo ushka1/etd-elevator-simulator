@@ -158,13 +158,14 @@ export function calculateRouteCost(
 export function mergeRoute(route: RouteNode[]) {
   const mergedRoute: RouteNode[] = [];
 
-  for (const node of route) {
-    const lastNode = mergedRoute[mergedRoute.length - 1];
-    if (lastNode && lastNode.floor === node.floor) {
-      lastNode.entering += node.entering;
-      lastNode.exiting += node.exiting;
+  for (const currentNode of route) {
+    const lastMergedNode = mergedRoute[mergedRoute.length - 1];
+
+    if (lastMergedNode && lastMergedNode.floor === currentNode.floor) {
+      lastMergedNode.entering += currentNode.entering;
+      lastMergedNode.exiting += currentNode.exiting;
     } else {
-      mergedRoute.push(node);
+      mergedRoute.push(currentNode);
     }
   }
 
