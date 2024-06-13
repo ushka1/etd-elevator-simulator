@@ -21,10 +21,10 @@ export interface ElevatorStateInfo {
 
 export abstract class ElevatorState implements ElevatorStateInfo {
   title: string = '';
-  private elapsedTime = 0;
+  protected elapsedTime = 0;
 
   constructor(
-    public elevator: Elevator,
+    protected elevator: Elevator,
     public stateType: ElevatorStateType,
     public duration: number,
   ) {}
